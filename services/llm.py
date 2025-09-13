@@ -19,7 +19,7 @@ async def gemini_llm_call(
     system_prompt: str,
     user_prompt: str | None,
     model_name: str,
-    temperature: float,
+    temperature: float = 0.1,
     json_format: None = None,
     is_thinking_enabled: bool = True,
     image_urls: list[str] = [],

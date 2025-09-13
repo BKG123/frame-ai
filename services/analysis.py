@@ -1,22 +1,23 @@
 import os
 import base64
-from typing import Dict, Optional, Any, Union
-from anthropic import Anthropic
+import requests
+from io import BytesIO
+from typing import Dict, Any, Union
+from services.llm import gemini_llm_call
 from .tools import adjust_brightness, enhance_saturation, apply_sharpen_filter
 from prompts import ANALYSE_SYSTEM_PROMPT
 
 
 class PhotoAnalyzer:
-    def __init__(self, api_key: Optional[str] = None):
-        self.client = Anthropic(api_key=api_key or os.getenv("ANTHROPIC_API_KEY"))
-
-    def get_exif_analysis(self, image_path: str) -> Dict:
+    def get_exif_analysis(self, image_url: str) -> Dict:
         """Extract and format EXIF data for analysis"""
         from PIL import Image
         from PIL.ExifTags import TAGS
 
         try:
-            image = Image.open(image_path)
+            response = requests.get(image_url)
+            response.raise_for_status()
+            image = Image.open(BytesIO(response.content))
             exifdata = image.getexif()
 
             analysis: Dict[str, Dict[Union[str, int], Any]] = {
@@ -54,19 +55,20 @@ class PhotoAnalyzer:
         except Exception as e:
             return {"error": f"Could not extract EXIF data: {e}"}
 
-    def encode_image(self, image_path: str) -> str:
+    def encode_image(self, image_url: str) -> str:
         """Encode image to base64 for Claude API"""
-        with open(image_path, "rb") as image_file:
-            return base64.b64encode(image_file.read()).decode("utf-8")
+        try:
+            response = requests.get(image_url)
+            response.raise_for_status()
+            return base64.b64encode(response.content).decode("utf-8")
+        except Exception as e:
+            raise Exception(f"Could not download image from URL: {e}")
 
-    def analyze_photo(self, image_path: str) -> str:
+    async def analyze_photo(self, image_url: str) -> str:
         """Analyze photo using Claude with EXIF data context"""
         try:
             # Get EXIF data
-            exif_analysis = self.get_exif_analysis(image_path)
-
-            # Encode image
-            base64_image = self.encode_image(image_path)
+            exif_analysis = self.get_exif_analysis(image_url)
 
             # Create context from EXIF data
             exif_context = ""
@@ -82,40 +84,17 @@ class PhotoAnalyzer:
 """
 
             # Combine system prompt with EXIF context
-            full_prompt = ANALYSE_SYSTEM_PROMPT + exif_context
-
-            message = self.client.messages.create(
-                model="claude-3-sonnet-20240229",
-                max_tokens=1500,
-                messages=[
-                    {
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "image",
-                                "source": {
-                                    "type": "base64",
-                                    "media_type": "image/jpeg",
-                                    "data": base64_image,
-                                },
-                            },
-                            {
-                                "type": "text",
-                                "text": "Please analyze this photograph following your FotoMentor guidelines.",
-                            },
-                        ],
-                    }
-                ],
-                system=full_prompt,
+            return await gemini_llm_call(
+                system_prompt=ANALYSE_SYSTEM_PROMPT,
+                user_prompt=exif_context,
+                model_name="gemini-2.5-flash",
             )
-
-            return message.content[0].text
 
         except Exception as e:
             return f"Error analyzing photo: {e}"
 
     def suggest_edits(
-        self, image_path: str, output_dir: str = "output"
+        self, image_url: str, output_dir: str = "output"
     ) -> Dict[str, str]:
         """Apply basic editing suggestions and save results"""
         results = {}
@@ -123,18 +102,32 @@ class PhotoAnalyzer:
         # Create output directory if it doesn't exist
         os.makedirs(output_dir, exist_ok=True)
 
-        # Extract filename without extension
-        filename = os.path.splitext(os.path.basename(image_path))[0]
+        # Extract filename from URL
+        filename = (
+            os.path.splitext(os.path.basename(image_url.split("?")[0]))[0] or "image"
+        )
 
         try:
+            # Download image first
+            response = requests.get(image_url)
+            response.raise_for_status()
+
+            # Save temporary file
+            temp_path = os.path.join(output_dir, f"{filename}_temp.jpg")
+            with open(temp_path, "wb") as f:
+                f.write(response.content)
+
             # Apply basic enhancements
             brightness_path = os.path.join(output_dir, f"{filename}_bright.jpg")
             saturation_path = os.path.join(output_dir, f"{filename}_saturated.jpg")
             sharp_path = os.path.join(output_dir, f"{filename}_sharp.jpg")
 
-            results["brightness"] = adjust_brightness(image_path, brightness_path, 1.2)
-            results["saturation"] = enhance_saturation(image_path, saturation_path, 1.3)
-            results["sharpening"] = apply_sharpen_filter(image_path, sharp_path)
+            results["brightness"] = adjust_brightness(temp_path, brightness_path, 1.2)
+            results["saturation"] = enhance_saturation(temp_path, saturation_path, 1.3)
+            results["sharpening"] = apply_sharpen_filter(temp_path, sharp_path)
+
+            # Clean up temporary file
+            os.remove(temp_path)
 
         except Exception as e:
             results["error"] = f"Error applying edits: {e}"
