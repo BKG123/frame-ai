@@ -1,6 +1,6 @@
 import os
 import base64
-from typing import Dict, Optional
+from typing import Dict, Optional, Any, Union
 from anthropic import Anthropic
 from .tools import adjust_brightness, enhance_saturation, apply_sharpen_filter
 from prompts import ANALYSE_SYSTEM_PROMPT
@@ -19,7 +19,11 @@ class PhotoAnalyzer:
             image = Image.open(image_path)
             exifdata = image.getexif()
 
-            analysis = {"camera_info": {}, "technical_settings": {}, "other_data": {}}
+            analysis: Dict[str, Dict[Union[str, int], Any]] = {
+                "camera_info": {},
+                "technical_settings": {},
+                "other_data": {},
+            }
 
             if exifdata:
                 for tag_id in exifdata:

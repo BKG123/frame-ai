@@ -8,4 +8,6 @@ dependencies = [
     "pillow>=11.3.0",
     "anthropic>=0.40.0",
     "click>=8.0.0",
+    "mypy>=1.18.1",
+    "ruff>=0.13.0",
 ]
