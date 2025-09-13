@@ -1,58 +1,84 @@
-import click
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, HttpUrl
+from typing import Optional, Dict
+import os
 from services.analysis import PhotoAnalyzer
 
+app = FastAPI(
+    title="Frame AI",
+    description="AI-powered photography coach and analysis tool",
+    version="0.1.0",
+)
 
-@click.command()
-@click.argument("image_path", type=click.Path(exists=True))
-@click.option("--api-key", help="Anthropic API key (or set ANTHROPIC_API_KEY env var)")
-@click.option("--output-dir", default="output", help="Directory for edited images")
-@click.option("--apply-edits", is_flag=True, help="Generate sample edited versions")
-def analyze(image_path, api_key, output_dir, apply_edits):
-    """Analyze a photograph and provide professional feedback."""
 
-    click.echo(f"🔍 Analyzing: {image_path}")
+# Request models
+class AnalyzeRequest(BaseModel):
+    image_url: HttpUrl
 
-    # Initialize analyzer
-    analyzer = PhotoAnalyzer(api_key=api_key)
 
-    # Perform analysis
+class EditRequest(BaseModel):
+    image_url: HttpUrl
+    output_dir: Optional[str] = "output"
+
+
+# Response models
+class AnalyzeResponse(BaseModel):
+    analysis: str
+
+
+class EditResponse(BaseModel):
+    results: Dict[str, str]
+
+
+# Initialize analyzer
+analyzer = PhotoAnalyzer()
+
+
+@app.get("/")
+async def root():
+    """Root endpoint with API information"""
+    return {
+        "message": "Welcome to Frame AI - Your Photography Coach",
+        "version": "0.1.0",
+        "endpoints": {
+            "analyze": "/analyze - Analyze a photo from URL",
+            "edit": "/edit - Generate sample edited versions",
+            "docs": "/docs - API documentation",
+        },
+    }
+
+
+@app.post("/analyze", response_model=AnalyzeResponse)
+async def analyze_photo(request: AnalyzeRequest):
+    """Analyze a photograph and provide professional feedback"""
     try:
-        analysis = analyzer.analyze_photo(image_path)
-
-        click.echo("\n" + "=" * 60)
-        click.echo("📸 PHOTOGRAPHY ANALYSIS")
-        click.echo("=" * 60)
-        click.echo(analysis)
-
-        if apply_edits:
-            click.echo("\n" + "=" * 60)
-            click.echo("🎨 APPLYING SAMPLE EDITS")
-            click.echo("=" * 60)
-
-            edit_results = analyzer.suggest_edits(image_path, output_dir)
-
-            for edit_type, result in edit_results.items():
-                if "error" not in edit_type.lower():
-                    click.echo(f"✅ {edit_type.title()}: {result}")
-                else:
-                    click.echo(f"❌ {result}")
-
+        analysis = await analyzer.analyze_photo(str(request.image_url))
+        return AnalyzeResponse(analysis=analysis)
     except Exception as e:
-        click.echo(f"❌ Error: {e}")
-        if "API key" in str(e):
-            click.echo("\n💡 Tip: Set your Anthropic API key with:")
-            click.echo("   export ANTHROPIC_API_KEY='your-key-here'")
-            click.echo("   or use --api-key flag")
+        raise HTTPException(status_code=500, detail=f"Error analyzing photo: {str(e)}")
 
 
-@click.group()
-def cli():
-    """Frame AI - Your Photography Coach"""
-    pass
+@app.post("/edit", response_model=EditResponse)
+async def edit_photo(request: EditRequest):
+    """Generate sample edited versions of the photo"""
+    try:
+        # Create output directory if it doesn't exist
+        output_dir = request.output_dir or "output"
+        os.makedirs(output_dir, exist_ok=True)
+
+        edit_results = analyzer.suggest_edits(str(request.image_url), output_dir)
+        return EditResponse(results=edit_results)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error editing photo: {str(e)}")
 
 
-cli.add_command(analyze)
+@app.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    return {"status": "healthy"}
 
 
 if __name__ == "__main__":
-    cli()
+    import uvicorn
+
+    uvicorn.run(app, host="0.0.0.0", port=8000)
