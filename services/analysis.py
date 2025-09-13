@@ -3,7 +3,7 @@ import base64
 import requests
 from io import BytesIO
 from typing import Dict, Any, Union
-from services.llm import gemini_llm_call
+from services.llm import gemini_llm_call, gemini_llm_call_stream
 from .tools import adjust_brightness, enhance_saturation, apply_sharpen_filter
 from prompts import ANALYSE_SYSTEM_PROMPT
 
@@ -133,3 +133,109 @@ class PhotoAnalyzer:
             results["error"] = f"Error applying edits: {e}"
 
         return results
+
+    def get_exif_analysis_from_file(self, file_path: str) -> Dict:
+        """Extract and format EXIF data from local file for analysis"""
+        from PIL import Image
+        from PIL.ExifTags import TAGS
+
+        try:
+            image = Image.open(file_path)
+            exifdata = image.getexif()
+
+            analysis: Dict[str, Dict[Union[str, int], Any]] = {
+                "camera_info": {},
+                "technical_settings": {},
+                "other_data": {},
+            }
+
+            if exifdata:
+                for tag_id in exifdata:
+                    tag_name = TAGS.get(tag_id, tag_id)
+                    value = exifdata.get(tag_id)
+
+                    if isinstance(value, bytes):
+                        try:
+                            value = value.decode()
+                        except UnicodeDecodeError:
+                            continue
+
+                    # Categorize EXIF data
+                    if tag_name in ["Make", "Model", "Software"]:
+                        analysis["camera_info"][tag_name] = value
+                    elif tag_name in [
+                        "FNumber",
+                        "ExposureTime",
+                        "ISOSpeedRatings",
+                        "FocalLength",
+                    ]:
+                        analysis["technical_settings"][tag_name] = value
+                    else:
+                        analysis["other_data"][tag_name] = value
+
+            return analysis
+
+        except Exception as e:
+            return {"error": f"Could not extract EXIF data: {e}"}
+
+    async def analyze_photo_from_file(self, file_path: str) -> str:
+        """Analyze photo from local file using Gemini with EXIF data context"""
+        try:
+            # Get EXIF data
+            exif_analysis = self.get_exif_analysis_from_file(file_path)
+
+            # Create context from EXIF data
+            exif_context = ""
+            if "technical_settings" in exif_analysis:
+                settings = exif_analysis["technical_settings"]
+                exif_context = f"""
+
+**Available EXIF Data:**
+- Aperture (f-stop): {settings.get("FNumber", "Not available")}
+- Shutter Speed: {settings.get("ExposureTime", "Not available")}
+- ISO: {settings.get("ISOSpeedRatings", "Not available")}
+- Focal Length: {settings.get("FocalLength", "Not available")}
+"""
+
+            # Convert file to temporary URL for Gemini API
+            # For now, we'll use the file path directly and modify the LLM call
+            return await gemini_llm_call(
+                system_prompt=ANALYSE_SYSTEM_PROMPT,
+                user_prompt=exif_context,
+                model_name="gemini-2.5-flash",
+                image_urls=[],  # We'll handle file directly in the LLM service
+            )
+
+        except Exception as e:
+            return f"Error analyzing photo: {e}"
+
+    async def analyze_photo_from_file_stream(self, file_path: str):
+        """Stream photo analysis from local file using Gemini with EXIF data context"""
+        try:
+            # Get EXIF data
+            exif_analysis = self.get_exif_analysis_from_file(file_path)
+
+            # Create context from EXIF data
+            exif_context = ""
+            if "technical_settings" in exif_analysis:
+                settings = exif_analysis["technical_settings"]
+                exif_context = f"""
+
+**Available EXIF Data:**
+- Aperture (f-stop): {settings.get("FNumber", "Not available")}
+- Shutter Speed: {settings.get("ExposureTime", "Not available")}
+- ISO: {settings.get("ISOSpeedRatings", "Not available")}
+- Focal Length: {settings.get("FocalLength", "Not available")}
+"""
+
+            # Stream analysis results
+            async for chunk in gemini_llm_call_stream(
+                system_prompt=ANALYSE_SYSTEM_PROMPT,
+                user_prompt=exif_context,
+                model_name="gemini-2.5-flash",
+                image_file_path=file_path,
+            ):
+                yield chunk
+
+        except Exception as e:
+            yield f"Error analyzing photo: {e}"
