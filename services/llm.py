@@ -5,13 +5,14 @@ from mimetypes import guess_type
 
 import requests
 from dotenv import load_dotenv
-
+from config.logger import get_logger
 from google.genai import types
 
 
 load_dotenv(override=True)
 
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+logger = get_logger(__name__)
 
 
 async def gemini_llm_call(
@@ -78,7 +79,7 @@ async def gemini_llm_call(
                 )
                 contents.append(image_part)
             except Exception as e:
-                print(f"Warning: Skipping image {url} due to error: {e}")
+                logger.error(f"Warning: Skipping image {url} due to error: {e}")
 
         # Call the Gemini API with combined contents (images + prompt)
         response = client.models.generate_content(
@@ -96,5 +97,5 @@ async def gemini_llm_call(
         return response.text
 
     except Exception as e:
-        print(f"Error in Gemini LLM call: {e}")
+        logger.error(f"Error in Gemini LLM call: {e}")
         raise
