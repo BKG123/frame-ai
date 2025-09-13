@@ -20,5 +20,5 @@ repos:
     rev: v1.18.1
     hooks:
       - id: mypy
-        additional_dependencies: [types-Pillow, types-click]
+        additional_dependencies: [types-Pillow, types-click, types-requests]
         args: [--ignore-missing-imports]
