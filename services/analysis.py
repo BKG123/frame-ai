@@ -1,6 +1,6 @@
 from typing import Dict, Any, Union
 from services.llm import gemini_llm_call_stream
-from prompts import ANALYSE_SYSTEM_PROMPT
+from prompts import ANALYSE_SYSTEM_PROMPT, ANALYSE_USER_PROMPT
 
 
 class PhotoAnalyzer:
@@ -64,11 +64,11 @@ class PhotoAnalyzer:
         try:
             # Get EXIF data
             exif_context = self.get_exif_context_from_file(file_path)
-
+            user_prompt = ANALYSE_USER_PROMPT.format(exif_context=exif_context)
             # Stream analysis results
             async for chunk in gemini_llm_call_stream(
                 system_prompt=ANALYSE_SYSTEM_PROMPT,
-                user_prompt=exif_context,
+                user_prompt=user_prompt,
                 model_name="gemini-2.5-flash",
                 image_file_path=file_path,
             ):

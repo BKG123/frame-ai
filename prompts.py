@@ -1,48 +1,8 @@
 PHOTOGRAPHY_BEST_PRACTICES = """
-### ✅ Best Practices That Are Visible in a Photo
 
-1. **Use of the Rule of Thirds**
-   The subject is positioned along grid lines or intersections for a balanced composition.
-
-2. **Eyes in Focus (for Portraits)**
-   The eyes are sharp and clear, drawing attention and emotion.
-
-3. **Simplified Backgrounds**
-   The background is uncluttered, helping the subject stand out.
-
-4. **Natural Lighting**
-   The lighting looks soft, flattering, and appropriate for the scene.
-
-5. **Use of Leading Lines**
-   Roads, rivers, or structures guide the viewer’s eye through the image.
-
-6. **Creative Perspectives**
-   The angle or viewpoint is unique or adds interest.
-
-7. **Shadows and Reflections**
-   Shadows or reflections are used creatively to add depth or drama.
-
-8. **Candid Moments**
-   The subjects look natural, unposed, and emotionally engaging.
-
-9. **Subtle Editing**
-   The photo looks enhanced but not over-processed; colors and tones feel natural.
-
-10. **Overall Composition and Balance**
-    The image feels harmonious, with good placement of elements and pleasing geometry.
 """
 
 ANALYSE_SYSTEM_PROMPT = """
-Excellent choice. Expanding the post-processing section will provide immense value, turning the critique into a practical mini-tutorial.
-
-Here is the updated "FotoMentor" prompt with a more robust and educational section for post-processing tips. The new section guides the AI to analyze editing potential in a structured way, from foundational fixes to creative enhancements.
-
-I have bolded the updated section for clarity.
-
----
-
-### Updated "FotoMentor" Prompt (V2.1)
-
 You are "FotoMentor," a professional photography critic and AI assistant. Your mission is to provide detailed, objective, and educational critiques to help photographers of all levels improve their craft. Your tone should be that of a helpful and knowledgeable mentor: encouraging but direct.
 
 When a user uploads an image, perform the following comprehensive analysis:
@@ -81,4 +41,47 @@ Present your final critique using the following markdown format:
 
 **Final Tip:**
 * (One final, memorable piece of advice that will stick with the photographer and help them grow.)
+"""
+
+ANALYSE_USER_PROMPT = """
+BEST PRACTICES PHOTOGRAPHY:
+\"\"\"
+### ✅ Best Practices That Are Visible in a Photo
+
+1. **Use of the Rule of Thirds**
+   The subject is positioned along grid lines or intersections for a balanced composition.
+
+2. **Eyes in Focus (for Portraits)**
+   The eyes are sharp and clear, drawing attention and emotion.
+
+3. **Simplified Backgrounds**
+   The background is uncluttered, helping the subject stand out.
+
+4. **Natural Lighting**
+   The lighting looks soft, flattering, and appropriate for the scene.
+
+5. **Use of Leading Lines**
+   Roads, rivers, or structures guide the viewer’s eye through the image.
+
+6. **Creative Perspectives**
+   The angle or viewpoint is unique or adds interest.
+
+7. **Shadows and Reflections**
+   Shadows or reflections are used creatively to add depth or drama.
+
+8. **Candid Moments**
+   The subjects look natural, unposed, and emotionally engaging.
+
+9. **Subtle Editing**
+   The photo looks enhanced but not over-processed; colors and tones feel natural.
+
+10. **Overall Composition and Balance**
+    The image feels harmonious, with good placement of elements and pleasing geometry.
+\"\"\"
+
+EXIF DATA
+\"\"\"
+{exif_context}
+\"\"\"
+
 """
