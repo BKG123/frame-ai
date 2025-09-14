@@ -8,7 +8,7 @@
 
 ## ✨ Features
 
-* 📸 **AI-Powered Photo Critique** – Get expert feedback on composition, lighting, and framing powered by [Anthropic Claude](https://www.anthropic.com/).
+* 📸 **AI-Powered Photo Critique** – Get expert feedback on composition, lighting, and framing powered by [Gemini ](https://aistudio.google.com/welcome).
 * 🔄 **Real-Time Streaming Analysis** – Watch the AI’s thought process unfold as it analyzes your photo.
 * 📷 **EXIF Data Insights** – Understand how your camera settings impact the shot.
 * 📋 **Structured Feedback** – Organized sections for strengths, improvements, and tips with expandable analysis cards.
@@ -24,7 +24,7 @@
 ### ✅ Prerequisites
 
 * Python 3.11 or later
-* An [Anthropic API key](https://www.anthropic.com/) for AI analysis
+* An [Gemini API key](https://aistudio.google.com/welcome) for AI analysis
 
 ---
 
@@ -118,7 +118,7 @@ frame-ai/
 │   └── logger.py
 ├── services/          # Core logic
 │   ├── analysis.py    # Photo critique and streaming
-│   ├── llm.py         # AI integration (Anthropic Claude)
+│   ├── llm.py         # AI integration
 │   └── tools.py       # Image processing utilities
 ├── static/
 │   └── index.html    # Responsive web UI
@@ -162,5 +162,5 @@ This project is open source. See the `LICENSE` file for details.
 ## 🙏 Acknowledgments
 
 * Built with [FastAPI](https://fastapi.tiangolo.com/)
-* AI analysis powered by [Anthropic Claude](https://www.anthropic.com/)
+* AI analysis powered by [Gemini](https://gemini.google.com/app)
 * Image processing using [Pillow](https://python-pillow.org/)
