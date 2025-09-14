@@ -1,126 +1,166 @@
-# Frame AI - Photography Coach
+# 📷 **Frame AI – Photography Coach**
 
-An AI-powered photography analysis and coaching tool that provides professional feedback on your photos through a modern, responsive web interface with real-time streaming analysis.
+**Frame AI** is an AI-powered photography analysis and coaching tool that provides professional, real-time feedback on your photos. Designed with photographers—amateurs and pros alike—in mind, it delivers actionable insights through a sleek, modern web interface.
 
-## Features
+🌐 **Live Demo:** [https://frame-ai.onrender.com](https://frame-ai.onrender.com)
 
-- 📸 **Professional Photo Analysis** - AI-powered critique based on photography principles using Anthropic Claude
-- 🔄 **Real-Time Streaming** - Watch your analysis unfold in real-time with streaming responses
-- 🎯 **EXIF Data Analysis** - Extracts and analyzes technical camera settings
-- 📋 **Structured Analysis Cards** - Organized sections for strengths, improvements, and actionable tips with collapsible interface
-- 🌐 **Modern Web Interface** - Responsive, accessible design with drag-and-drop photo upload
-- 🌙 **Dark/Light Theme** - Toggle between themes with automatic system preference detection
-- 📋 **Copy & Share** - Easy sharing of analysis results with clipboard integration
-- 🚀 **FastAPI Backend** - High-performance API with streaming support and automatic documentation
+---
 
-## Quick Start
+## ✨ Features
 
-### Prerequisites
+* 📸 **AI-Powered Photo Critique** – Get expert feedback on composition, lighting, and framing powered by [Anthropic Claude](https://www.anthropic.com/).
+* 🔄 **Real-Time Streaming Analysis** – Watch the AI’s thought process unfold as it analyzes your photo.
+* 📷 **EXIF Data Insights** – Understand how your camera settings impact the shot.
+* 📋 **Structured Feedback** – Organized sections for strengths, improvements, and tips with expandable analysis cards.
+* 🌐 **Responsive Interface** – Works on desktop and mobile with drag-and-drop uploads.
+* 🌙 **Dark/Light Mode** – Automatically adapts to your system preferences or manually toggle.
+* 📋 **Shareable Results** – Copy and share feedback with ease.
+* 🚀 **FastAPI Backend** – Built for speed with streaming support and auto-generated API docs.
 
-- Python 3.11 or higher
-- An Anthropic API key (for AI analysis)
+---
 
-### Installation
+## 🚀 Quick Start
 
-1. Clone the repository:
-```bash
-git clone https://github.com/BKG123/frame-ai.git
-cd frame-ai
-```
+### ✅ Prerequisites
 
-2. Install dependencies with uv:
-```bash
-uv sync
-```
+* Python 3.11 or later
+* An [Anthropic API key](https://www.anthropic.com/) for AI analysis
 
-> **Note**: This project uses [uv](https://docs.astral.sh/uv/) for fast, reliable Python package management. If you don't have uv installed, install it with:
-> ```bash
-> curl -LsSf https://astral.sh/uv/install.sh | sh
-> ```
+---
 
-3. Set up environment variables:
-```bash
-cp .env.example .env
-```
+### 📂 Installation
 
-### Running the Application
+1. **Clone the repository:**
 
-Start the web server with hot reloading:
+   ```bash
+   git clone https://github.com/BKG123/frame-ai.git
+   cd frame-ai
+   ```
+
+2. **Install dependencies with uv:**
+
+   ```bash
+   uv sync
+   ```
+
+   > If you don’t have `uv`, install it:
+
+   ```bash
+   curl -LsSf https://astral.sh/uv/install.sh | sh
+   ```
+
+3. **Configure environment variables:**
+
+   ```bash
+   cp .env.example .env
+   ```
+
+---
+
+### ▶ Running the Application
+
+Start the server with hot reloading:
+
 ```bash
 uv run uvicorn main:app --reload
 ```
 
-Or run directly:
+Or run it directly:
+
 ```bash
 uv run python main.py
 ```
 
-The application will be available at `http://localhost:8000`
+Access it at:
 
-- **Web Interface**: `http://localhost:8000` - Modern drag-and-drop photo analysis interface
-- **API Documentation**: `http://localhost:8000/docs` - Interactive FastAPI documentation
-- **Health Check**: `http://localhost:8000/health` - Service health status
+* **Web Interface:** `http://localhost:8000`
+* **API Docs:** `http://localhost:8000/docs`
+* **Health Check:** `http://localhost:8000/health`
 
-## API Endpoints
+---
 
-### Photo Analysis
-- `POST /upload` - Upload and analyze a photo with streaming response
+## 📦 API Endpoints
 
-### Utility
-- `GET /health` - Health check endpoint
-- `GET /` - Web interface
+### 📸 Photo Analysis
 
-## Development
+* `POST /upload` – Upload your photo and receive real-time analysis.
+
+### ✅ Utility
+
+* `GET /health` – Check if the service is running.
+* `GET /` – Access the web interface.
+
+---
+
+## 🛠 Development
 
 ### Code Quality
 
-This project uses several tools to maintain code quality:
+Maintain standards using:
 
 ```bash
-# Linting with ruff
+# Lint with ruff
 uv run ruff check .
 
-# Type checking with mypy
+# Type check with mypy
 uv run mypy .
 
-# Pre-commit hooks (automatically run on commit)
+# Install pre-commit hooks
 uv run pre-commit install
 ```
 
-### Project Structure
+### 📂 Project Structure
 
 ```
 frame-ai/
-├── config/          # Configuration and logging
+├── config/            # Configuration files and logging
 │   ├── __init__.py
-│   └── logger.py    # Logging configuration
-├── services/        # Core business logic
-│   ├── analysis.py  # Photo analysis service with streaming
-│   ├── llm.py      # AI/LLM integration (Anthropic Claude)
-│   └── tools.py    # Image processing utilities
+│   └── logger.py
+├── services/          # Core logic
+│   ├── analysis.py    # Photo critique and streaming
+│   ├── llm.py         # AI integration (Anthropic Claude)
+│   └── tools.py       # Image processing utilities
 ├── static/
-│   └── index.html  # Modern responsive web interface with streaming UI
-├── main.py         # FastAPI application with streaming endpoints
-├── prompts.py      # AI prompt templates for photography analysis
-└── pyproject.toml  # Project configuration with uv dependencies
+│   └── index.html    # Responsive web UI
+├── main.py           # FastAPI app definition
+├── prompts.py        # AI prompt templates
+└── pyproject.toml    # Project dependencies with uv
 ```
 
-## Contributing
+---
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes
-4. Run tests and linting (`uv run ruff check . && uv run mypy .`)
-5. Commit your changes (`git commit -m 'Add amazing feature'`)
-6. Push to the branch (`git push origin feature/amazing-feature`)
-7. Open a Pull Request
+## 🤝 Contributing
 
-## License
+1. Fork the repo
+2. Create a new branch:
 
-This project is open source. Please see the LICENSE file for details.
+   ```bash
+   git checkout -b feature/amazing-feature
+   ```
+3. Implement your changes
+4. Run tests:
 
-## Acknowledgments
+   ```bash
+   uv run ruff check . && uv run mypy .
+   ```
+5. Commit and push:
 
-- Built with [FastAPI](https://fastapi.tiangolo.com/)
-- AI analysis powered by [Anthropic Claude](https://www.anthropic.com/)
-- Image processing with [Pillow](https://python-pillow.org/)
+   ```bash
+   git commit -m "Add amazing feature"
+   git push origin feature/amazing-feature
+   ```
+6. Open a Pull Request!
+
+---
+
+## 📄 License
+
+This project is open source. See the `LICENSE` file for details.
+
+---
+
+## 🙏 Acknowledgments
+
+* Built with [FastAPI](https://fastapi.tiangolo.com/)
+* AI analysis powered by [Anthropic Claude](https://www.anthropic.com/)
+* Image processing using [Pillow](https://python-pillow.org/)
