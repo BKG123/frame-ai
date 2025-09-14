@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Frame AI - Photography Coach</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -12,39 +13,63 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
+            color: #1e293b;
+            line-height: 1.6;
         }
 
         .container {
+            max-width: 1000px;
+            margin: 0 auto;
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            max-width: 800px;
-            width: 100%;
-            overflow: hidden;
+            min-height: 100vh;
+            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05);
         }
 
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
             color: white;
-            padding: 2rem;
+            padding: 3rem 2rem;
             text-align: center;
+            position: relative;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
         }
 
         .header h1 {
             font-size: 2.5rem;
+            font-weight: 700;
             margin-bottom: 0.5rem;
+            letter-spacing: -0.025em;
         }
 
         .header p {
-            font-size: 1.1rem;
+            font-size: 1.125rem;
             opacity: 0.9;
+            font-weight: 400;
         }
 
         .main {
@@ -52,43 +77,54 @@
         }
 
         .upload-area {
-            border: 3px dashed #667eea;
-            border-radius: 15px;
-            padding: 3rem;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 3rem 2rem;
             text-align: center;
-            background: #f8f9ff;
-            transition: all 0.3s ease;
+            background: #f8fafc;
+            transition: all 0.2s ease;
             cursor: pointer;
             margin-bottom: 2rem;
         }
 
         .upload-area:hover {
-            border-color: #764ba2;
-            background: #f0f2ff;
+            border-color: #6366f1;
+            background: #f1f5f9;
         }
 
         .upload-area.dragover {
-            border-color: #764ba2;
-            background: #e8ebff;
-            transform: scale(1.02);
+            border-color: #6366f1;
+            background: #eff6ff;
+            border-style: solid;
         }
 
         .upload-icon {
-            font-size: 3rem;
-            color: #667eea;
-            margin-bottom: 1rem;
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 1rem;
+            background: #6366f1;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .upload-icon svg {
+            width: 24px;
+            height: 24px;
         }
 
         .upload-text {
-            font-size: 1.2rem;
-            color: #667eea;
+            font-size: 1.125rem;
+            color: #334155;
             font-weight: 600;
             margin-bottom: 0.5rem;
         }
 
         .upload-subtext {
-            color: #888;
-            font-size: 0.9rem;
+            color: #64748b;
+            font-size: 0.875rem;
         }
 
         #file-input {
@@ -96,151 +132,317 @@
         }
 
         .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #6366f1;
             color: white;
             border: none;
-            padding: 12px 24px;
+            padding: 0.75rem 1.5rem;
             border-radius: 8px;
-            font-size: 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
             margin-top: 1rem;
         }
 
         .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            background: #4f46e5;
         }
 
         .btn:disabled {
-            opacity: 0.6;
+            opacity: 0.5;
             cursor: not-allowed;
-            transform: none;
+            background: #94a3b8;
         }
 
         .preview-area {
             display: none;
             margin-bottom: 2rem;
+            text-align: center;
         }
 
         .preview-image {
             max-width: 100%;
-            max-height: 300px;
-            border-radius: 10px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            max-height: 400px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             margin-bottom: 1rem;
+            object-fit: contain;
         }
 
         .analysis-area {
             display: none;
-            background: #f8f9ff;
-            border-radius: 15px;
-            padding: 2rem;
             margin-top: 2rem;
         }
 
         .analysis-header {
-            font-size: 1.3rem;
-            color: #667eea;
-            margin-bottom: 1rem;
-            font-weight: 600;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .action-btn {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #64748b;
+        }
+
+        .action-btn:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            color: #475569;
+        }
+
+        .action-btn.success {
+            background: #ecfdf5;
+            border-color: #a7f3d0;
+            color: #059669;
+        }
+
+        body.dark .action-btn {
+            background: #334155;
+            border-color: #475569;
+            color: #94a3b8;
+        }
+
+        body.dark .action-btn:hover {
+            background: #475569;
+            border-color: #64748b;
+            color: #cbd5e1;
+        }
+
+        body.dark .action-btn.success {
+            background: #064e3b;
+            border-color: #10b981;
+            color: #10b981;
         }
 
         .analysis-content {
-            line-height: 1.6;
-            color: #333;
-            font-size: 1rem;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
         }
 
-        .analysis-content h1,
-        .analysis-content h2,
-        .analysis-content h3,
-        .analysis-content h4,
-        .analysis-content h5,
-        .analysis-content h6 {
-            color: #667eea;
-            margin: 1.5rem 0 1rem 0;
+        /* Analysis sections */
+        .analysis-section {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .analysis-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            font-size: 1.125rem;
             font-weight: 600;
+            color: #1e293b;
+            cursor: pointer;
+            transition: all 0.2s ease;
         }
 
-        .analysis-content h1 { font-size: 1.8rem; }
-        .analysis-content h2 { font-size: 1.5rem; }
-        .analysis-content h3 { font-size: 1.3rem; }
+        .section-header:hover {
+            color: #6366f1;
+        }
 
-        .analysis-content p {
+        .collapse-toggle {
+            margin-left: auto;
+            transition: transform 0.2s ease;
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .collapsed .collapse-toggle {
+            transform: rotate(-90deg);
+        }
+
+        .collapsed .section-content {
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            margin-bottom: 0;
+        }
+
+        .section-content {
+            max-height: 1000px;
+            overflow: hidden;
+            opacity: 1;
+            transition: all 0.3s ease;
             margin-bottom: 1rem;
         }
 
-        .analysis-content ul,
-        .analysis-content ol {
-            margin: 1rem 0;
-            padding-left: 1.5rem;
-        }
-
-        .analysis-content li {
-            margin-bottom: 0.5rem;
-        }
-
-        .analysis-content code {
-            background: #f1f3f4;
-            padding: 0.2rem 0.4rem;
+        .section-icon {
+            width: 24px;
+            height: 24px;
             border-radius: 4px;
-            font-family: 'Monaco', 'Consolas', monospace;
-            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            flex-shrink: 0;
+            color: white;
         }
 
-        .analysis-content pre {
-            background: #f8f9fa;
-            padding: 1rem;
-            border-radius: 8px;
-            overflow-x: auto;
+        .strengths .section-icon {
+            background: #10b981;
+        }
+
+        .improvements .section-icon {
+            background: #f59e0b;
+        }
+
+        .tips .section-icon {
+            background: #3b82f6;
+        }
+
+        .overall .section-icon {
+            background: #6366f1;
+        }
+
+        .analysis-section .section-content {
+            color: #475569;
+            line-height: 1.7;
+        }
+
+        .section-content p {
+            margin-bottom: 1rem;
+        }
+
+        .section-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-content ul {
+            list-style: none;
             margin: 1rem 0;
-        }
-
-        .analysis-content pre code {
-            background: none;
             padding: 0;
         }
 
-        .analysis-content blockquote {
-            border-left: 4px solid #667eea;
-            padding-left: 1rem;
-            margin: 1rem 0;
-            color: #666;
-            font-style: italic;
+        .section-content li {
+            margin-bottom: 0.75rem;
+            padding: 0.75rem;
+            background: #f8fafc;
+            border-radius: 6px;
+            border-left: 3px solid #e2e8f0;
+            position: relative;
         }
 
-        .analysis-content strong {
+        .strengths li {
+            border-left-color: #10b981;
+            background: #ecfdf5;
+        }
+
+        .improvements li {
+            border-left-color: #f59e0b;
+            background: #fffbeb;
+        }
+
+        .tips li {
+            border-left-color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        .section-content strong {
             font-weight: 600;
-            color: #333;
+            color: #1e293b;
         }
 
-        .analysis-content em {
-            font-style: italic;
+        .pro-tip {
+            background: #fef3c7;
+            border: 1px solid #fbbf24;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            color: #92400e;
         }
 
-        .analysis-content hr {
-            border: none;
-            height: 2px;
-            background: #e0e0e0;
-            margin: 2rem 0;
+        .pro-tip strong {
+            color: #92400e;
         }
 
+        /* Loading states */
         .loading {
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        .progress-container {
+            margin-bottom: 1.5rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #6366f1;
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-message {
             display: flex;
             align-items: center;
-            gap: 10px;
-            color: #667eea;
-            font-weight: 500;
+            justify-content: center;
+            gap: 0.5rem;
+            color: #64748b;
+            font-size: 0.875rem;
         }
 
         .spinner {
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #e2e8f0;
+            border-top: 2px solid #6366f1;
             border-radius: 50%;
             animation: spin 1s linear infinite;
+        }
+
+        .progress-percentage {
+            font-weight: 600;
+            color: #6366f1;
         }
 
         @keyframes spin {
@@ -248,31 +450,174 @@
             100% { transform: rotate(360deg); }
         }
 
+        /* Dark mode styles */
+        body.dark {
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+
+        body.dark .container {
+            background: #1e293b;
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05);
+        }
+
+        body.dark .header {
+            background: linear-gradient(135deg, #4338ca 0%, #7c3aed 100%);
+        }
+
+        body.dark .upload-area {
+            background: #334155;
+            border-color: #475569;
+            color: #cbd5e1;
+        }
+
+        body.dark .upload-area:hover {
+            border-color: #6366f1;
+            background: #475569;
+        }
+
+        body.dark .upload-area.dragover {
+            background: #1e293b;
+            border-color: #6366f1;
+        }
+
+        body.dark .upload-text {
+            color: #cbd5e1;
+        }
+
+        body.dark .upload-subtext {
+            color: #94a3b8;
+        }
+
+        body.dark .analysis-content {
+            background: #1e293b;
+            border-color: #334155;
+        }
+
+        body.dark .section-header {
+            color: #e2e8f0;
+        }
+
+        body.dark .section-header:hover {
+            color: #6366f1;
+        }
+
+        body.dark .section-content {
+            color: #cbd5e1;
+        }
+
+        body.dark .section-content strong {
+            color: #e2e8f0;
+        }
+
+        body.dark .section-content li {
+            background: #334155;
+            border-left-color: #475569;
+        }
+
+        body.dark .strengths li {
+            background: #064e3b;
+            border-left-color: #10b981;
+        }
+
+        body.dark .improvements li {
+            background: #451a03;
+            border-left-color: #f59e0b;
+        }
+
+        body.dark .tips li {
+            background: #172554;
+            border-left-color: #3b82f6;
+        }
+
+        body.dark .pro-tip {
+            background: #451a03;
+            border-color: #f59e0b;
+            color: #fbbf24;
+        }
+
+        body.dark .pro-tip strong {
+            color: #fbbf24;
+        }
+
+        body.dark .analysis-section {
+            border-bottom-color: #334155;
+        }
+
+        body.dark .progress-bar {
+            background: #334155;
+        }
+
+        body.dark .progress-message {
+            color: #94a3b8;
+        }
+
+        body.dark .spinner {
+            border-color: #334155;
+            border-top-color: #6366f1;
+        }
+
         .error {
-            color: #e74c3c;
-            background: #ffeaea;
+            color: #dc2626;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
             padding: 1rem;
             border-radius: 8px;
             margin-top: 1rem;
+            font-size: 0.875rem;
+            text-align: center;
         }
 
         .success {
-            color: #27ae60;
-            background: #eafaf1;
+            color: #059669;
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
             padding: 1rem;
             border-radius: 8px;
             margin-top: 1rem;
+            font-size: 0.875rem;
+            text-align: center;
         }
 
-        @media (max-width: 600px) {
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .header {
+                padding: 2rem 1rem;
+            }
+
             .header h1 {
                 font-size: 2rem;
             }
+
+            .main {
+                padding: 1.5rem;
+            }
+
             .upload-area {
                 padding: 2rem 1rem;
             }
+
+            .analysis-content {
+                padding: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                margin: 0;
+                border-radius: 0;
+            }
+
+            .header {
+                padding: 1.5rem 1rem;
+            }
+
+            .header h1 {
+                font-size: 1.75rem;
+            }
+
             .main {
-                padding: 1.5rem;
+                padding: 1rem;
             }
         }
     </style>
@@ -281,12 +626,18 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>📸 Frame AI</h1>
+            <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode">🌙</button>
+            <h1>Frame AI</h1>
             <p>Your Personal Photography Coach</p>
         </div>
         <div class="main">
             <div class="upload-area" id="upload-area">
-                <div class="upload-icon">📷</div>
+                <div class="upload-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                        <circle cx="12" cy="13" r="4"></circle>
+                    </svg>
+                </div>
                 <div class="upload-text">Drop your photo here or click to browse</div>
                 <div class="upload-subtext">Supports JPG, PNG, and other image formats</div>
                 <input type="file" id="file-input" accept="image/*">
@@ -294,15 +645,51 @@
 
             <div class="preview-area" id="preview-area">
                 <img class="preview-image" id="preview-image" alt="Preview">
-                <button class="btn" id="analyze-btn">🎯 Analyze Photo</button>
+                <button class="btn" id="analyze-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="M21 21l-4.35-4.35"></path>
+                    </svg>
+                    Analyze Photo
+                </button>
             </div>
 
             <div class="analysis-area" id="analysis-area">
-                <div class="analysis-header">📊 Photography Analysis</div>
+                <div class="analysis-header">
+                    <div class="header-left">
+                        <span>📸</span>
+                        Photography Analysis
+                    </div>
+                    <div class="header-actions">
+                        <button class="action-btn" id="copy-btn" onclick="copyAnalysis()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+                                <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+                            </svg>
+                            Copy
+                        </button>
+                        <button class="action-btn" id="share-btn" onclick="shareAnalysis()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                                <polyline points="16,6 12,2 8,6"/>
+                                <line x1="12" y1="2" x2="12" y2="15"/>
+                            </svg>
+                            Share
+                        </button>
+                    </div>
+                </div>
                 <div class="analysis-content" id="analysis-content">
                     <div class="loading" id="loading">
-                        <div class="spinner"></div>
-                        Getting insights from your photo...
+                        <div class="progress-container">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progress-fill"></div>
+                            </div>
+                            <div class="progress-message" id="progress-message">
+                                <div class="spinner"></div>
+                                <span id="progress-text">Initializing analysis...</span>
+                                <span class="progress-percentage" id="progress-percentage">0%</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -317,16 +704,24 @@
         const analyzeBtn = document.getElementById('analyze-btn');
         const analysisArea = document.getElementById('analysis-area');
         const analysisContent = document.getElementById('analysis-content');
-        const loading = document.getElementById('loading');
 
         let selectedFile = null;
 
-        // Upload area click handler
+        const progressStages = [
+            { progress: 15, message: 'Uploading image...', icon: '📤' },
+            { progress: 30, message: 'Processing image data...', icon: '🔄' },
+            { progress: 50, message: 'Analyzing composition...', icon: '🎯' },
+            { progress: 70, message: 'Evaluating lighting...', icon: '💡' },
+            { progress: 85, message: 'Assessing color balance...', icon: '🎨' },
+            { progress: 95, message: 'Generating insights...', icon: '🧠' }
+        ];
+
+        let currentStageIndex = 0;
+
         uploadArea.addEventListener('click', () => {
             fileInput.click();
         });
 
-        // Drag and drop handlers
         uploadArea.addEventListener('dragover', (e) => {
             e.preventDefault();
             uploadArea.classList.add('dragover');
@@ -345,14 +740,12 @@
             }
         });
 
-        // File input change handler
         fileInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) {
                 handleFile(e.target.files[0]);
             }
         });
 
-        // Analyze button handler
         analyzeBtn.addEventListener('click', () => {
             if (selectedFile) {
                 analyzePhoto(selectedFile);
@@ -367,19 +760,66 @@
 
             selectedFile = file;
 
-            // Create preview
             const reader = new FileReader();
             reader.onload = (e) => {
                 previewImage.src = e.target.result;
                 previewArea.style.display = 'block';
-                analysisArea.style.display = 'none';
+
+                if (analysisArea.style.display === 'block') {
+                    analysisArea.style.display = 'none';
+                }
             };
             reader.readAsDataURL(file);
         }
 
+        function simulateProgress(progressFill, progressText, progressPercentage) {
+            if (currentStageIndex < progressStages.length) {
+                const stage = progressStages[currentStageIndex];
+
+                progressFill.style.width = stage.progress + '%';
+                progressText.textContent = stage.message;
+                progressPercentage.textContent = stage.progress + '%';
+
+                currentStageIndex++;
+
+                if (currentStageIndex < progressStages.length) {
+                    setTimeout(() => {
+                        simulateProgress(progressFill, progressText, progressPercentage);
+                    }, 800);
+                }
+            }
+        }
+
         async function analyzePhoto(file) {
             analysisArea.style.display = 'block';
-            analysisContent.innerHTML = '<div class="loading" id="loading"><div class="spinner"></div>Getting insights from your photo...</div>';
+
+            analysisContent.innerHTML = `
+                <div class="loading" id="loading">
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progress-fill"></div>
+                        </div>
+                        <div class="progress-message" id="progress-message">
+                            <div class="spinner"></div>
+                            <span id="progress-text">Initializing analysis...</span>
+                            <span class="progress-percentage" id="progress-percentage">0%</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            currentStageIndex = 0;
+
+            setTimeout(() => {
+                const progressFill = document.getElementById('progress-fill');
+                const progressText = document.getElementById('progress-text');
+                const progressPercentage = document.getElementById('progress-percentage');
+
+                if (progressFill && progressText && progressPercentage) {
+                    simulateProgress(progressFill, progressText, progressPercentage);
+                }
+            }, 100);
+
             analyzeBtn.disabled = true;
 
             try {
@@ -399,9 +839,6 @@
                 const decoder = new TextDecoder();
                 let analysisText = '';
 
-                // Clear loading message
-                analysisContent.innerHTML = '';
-
                 while (true) {
                     const { value, done } = await reader.read();
                     if (done) break;
@@ -416,16 +853,22 @@
 
                                 if (data.type === 'chunk') {
                                     analysisText += data.content;
-                                    analysisContent.innerHTML = marked.parse(analysisText);
+                                    // Remove loading state after first chunk arrives
+                                    if (document.getElementById('loading')) {
+                                        analysisContent.innerHTML = '';
+                                    }
+                                    // Update content with streaming data in real-time
+                                    analysisContent.innerHTML = enhanceAnalysisContent(marked.parse(analysisText));
                                 } else if (data.type === 'error') {
                                     showError('Analysis error: ' + data.content);
                                     return;
                                 } else if (data.type === 'done') {
-                                    showSuccess('Analysis completed!');
+                                    const enhancedContent = enhanceAnalysisContent(marked.parse(analysisText));
+                                    analysisContent.innerHTML = enhancedContent;
                                     return;
                                 }
                             } catch (e) {
-                                // Skip invalid JSON
+                                console.error('Error parsing SSE data:', e);
                             }
                         }
                     }
@@ -439,15 +882,351 @@
             }
         }
 
+        function enhanceAnalysisContent(htmlContent) {
+            // Convert streamed markdown content into structured card format
+            return convertToCardFormat(htmlContent);
+        }
+
+        function convertToCardFormat(htmlContent) {
+            // Create a temporary div to parse the HTML
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = htmlContent;
+
+            let cardHtml = '';
+            let currentSection = null;
+            let isFirstSection = true;
+
+            // Process all elements
+            const elements = Array.from(tempDiv.children);
+
+            for (let i = 0; i < elements.length; i++) {
+                const element = elements[i];
+
+                // Check for H3 headings (like "📸 FotoMentor Analysis") or bold section headers
+                const isMainHeading = (element.tagName === 'H3' && element.textContent.includes('FotoMentor'));
+                const isSectionHeader = element.tagName === 'P' && element.querySelector('strong') &&
+                                       (element.textContent.includes('Overall Impression:') ||
+                                        element.textContent.includes('Strengths:') ||
+                                        element.textContent.includes('Opportunities for Improvement:') ||
+                                        element.textContent.includes('Professional Tips:')) ||
+                                        element.textContent.includes('Final Tip:');
+
+                if (isMainHeading) {
+                    // Skip the main heading, we'll use it as the overall title
+                    continue;
+                } else if (isSectionHeader) {
+                    // Close previous section if exists
+                    if (currentSection) {
+                        cardHtml += `</div></div>`;
+                    }
+
+                    // Extract section text and determine type
+                    const sectionText = element.textContent.replace(/^\*\*|\*\*$/g, '').replace(':', '');
+                    let sectionType = 'general';
+                    let icon = '📄';
+                    let displayName = sectionText;
+
+                    if (sectionText.toLowerCase().includes('overall impression')) {
+                        sectionType = 'overall';
+                        icon = '📊';
+                        displayName = 'Overall Impression';
+                    } else if (sectionText.toLowerCase().includes('strengths')) {
+                        sectionType = 'strengths';
+                        icon = '✅';
+                        displayName = 'Strengths';
+                    } else if (sectionText.toLowerCase().includes('opportunities') || sectionText.toLowerCase().includes('improvement')) {
+                        sectionType = 'improvements';
+                        icon = '⚠️';
+                        displayName = 'Areas for Improvement';
+                    } else if (sectionText.toLowerCase().includes('professional tips')) {
+                        sectionType = 'tips';
+                        icon = '💡';
+                        displayName = 'Professional Tips';
+                    }
+
+                    // Start new section (first section expanded, others collapsed)
+                    const collapsedClass = isFirstSection ? '' : ' collapsed';
+                    cardHtml += `
+                        <div class="analysis-section ${sectionType}${collapsedClass}">
+                            <div class="section-header" onclick="toggleSection(this)">
+                                <div class="section-icon">${icon}</div>
+                                <span>${displayName}</span>
+                                <div class="collapse-toggle">▼</div>
+                            </div>
+                            <div class="section-content">`;
+
+                    currentSection = sectionType;
+                    isFirstSection = false;
+
+                    // Add the content that follows the bold header (if it's on the same line)
+                    const contentAfterColon = element.textContent.split(':').slice(1).join(':').trim();
+                    if (contentAfterColon) {
+                        cardHtml += `<p>${contentAfterColon}</p>`;
+                    }
+                } else if (currentSection) {
+                    // Add content to current section
+                    cardHtml += element.outerHTML;
+                } else {
+                    // If no section header yet, create a default one
+                    if (!currentSection) {
+                        cardHtml += `
+                            <div class="analysis-section overall">
+                                <div class="section-header" onclick="toggleSection(this)">
+                                    <div class="section-icon">📊</div>
+                                    <span>Photography Analysis</span>
+                                    <div class="collapse-toggle">▼</div>
+                                </div>
+                                <div class="section-content">`;
+                        currentSection = 'general';
+                    }
+                    cardHtml += element.outerHTML;
+                }
+            }
+
+            // Close final section
+            if (currentSection) {
+                cardHtml += `</div></div>`;
+            }
+
+            // If no content was structured, return original content wrapped in a default card
+            if (!cardHtml.trim()) {
+                cardHtml = `
+                    <div class="analysis-section overall">
+                        <div class="section-header" onclick="toggleSection(this)">
+                            <div class="section-icon">📊</div>
+                            <span>Photography Analysis</span>
+                            <div class="collapse-toggle">▼</div>
+                        </div>
+                        <div class="section-content">
+                            ${htmlContent}
+                        </div>
+                    </div>`;
+            }
+
+            return cardHtml;
+        }
+
+        function toggleSection(header) {
+            const section = header.parentElement;
+            section.classList.toggle('collapsed');
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            const themeToggle = document.getElementById('theme-toggle');
+
+            body.classList.toggle('dark');
+
+            // Update toggle button icon and save preference
+            if (body.classList.contains('dark')) {
+                themeToggle.textContent = '☀️';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                themeToggle.textContent = '🌙';
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        // Initialize theme on page load
+        function initializeTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const themeToggle = document.getElementById('theme-toggle');
+
+            // Check if element exists before trying to modify it
+            if (!themeToggle) {
+                console.error('Theme toggle button not found');
+                return;
+            }
+
+            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                document.body.classList.add('dark');
+                themeToggle.textContent = '☀️';
+            } else {
+                themeToggle.textContent = '🌙';
+            }
+        }
+
+        // Initialize theme when the page loads
+        document.addEventListener('DOMContentLoaded', initializeTheme);
+
         function showError(message) {
-            analysisContent.innerHTML = `<div class="error">${message}</div>`;
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.textContent = message;
+
+            const main = document.querySelector('.main');
+            main.appendChild(errorDiv);
+
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 5000);
         }
 
         function showSuccess(message) {
             const successDiv = document.createElement('div');
             successDiv.className = 'success';
             successDiv.textContent = message;
-            analysisArea.appendChild(successDiv);
+
+            const main = document.querySelector('.main');
+            main.appendChild(successDiv);
+
+            setTimeout(() => {
+                successDiv.remove();
+            }, 5000);
+        }
+
+        async function copyAnalysis() {
+            const copyBtn = document.getElementById('copy-btn');
+            const previewImage = document.getElementById('preview-image');
+            const analysisContent = document.getElementById('analysis-content');
+
+            if (!analysisContent.textContent.trim() || document.getElementById('loading')) {
+                showError('No analysis to copy yet. Please analyze a photo first.');
+                return;
+            }
+
+            try {
+                // Get analysis text without HTML tags
+                const analysisText = analysisContent.innerText;
+
+                // Try to copy image and text together if possible
+                if (previewImage.src && navigator.clipboard.write) {
+                    try {
+                        // Convert image to blob
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        canvas.width = previewImage.naturalWidth;
+                        canvas.height = previewImage.naturalHeight;
+                        ctx.drawImage(previewImage, 0, 0);
+
+                        canvas.toBlob(async (blob) => {
+                            const clipboardItems = [
+                                new ClipboardItem({
+                                    'image/png': blob,
+                                    'text/plain': new Blob([analysisText], { type: 'text/plain' })
+                                })
+                            ];
+
+                            try {
+                                await navigator.clipboard.write(clipboardItems);
+                                showCopySuccess(copyBtn, 'Image & analysis copied!');
+                            } catch (e) {
+                                // Fallback to text only
+                                await navigator.clipboard.writeText(analysisText);
+                                showCopySuccess(copyBtn, 'Analysis copied!');
+                            }
+                        }, 'image/png');
+                        return;
+                    } catch (e) {
+                        console.log('Image copy failed, falling back to text');
+                    }
+                }
+
+                // Fallback: copy text only
+                await navigator.clipboard.writeText(analysisText);
+                showCopySuccess(copyBtn, 'Analysis copied!');
+
+            } catch (error) {
+                console.error('Copy failed:', error);
+                showError('Failed to copy. Please try again.');
+            }
+        }
+
+        function showCopySuccess(button, message) {
+            const originalText = button.innerHTML;
+            button.classList.add('success');
+            button.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 6L9 17l-5-5"/>
+                </svg>
+                ${message}
+            `;
+
+            setTimeout(() => {
+                button.classList.remove('success');
+                button.innerHTML = originalText;
+            }, 2000);
+        }
+
+        async function shareAnalysis() {
+            const shareBtn = document.getElementById('share-btn');
+            const previewImage = document.getElementById('preview-image');
+            const analysisContent = document.getElementById('analysis-content');
+
+            if (!analysisContent.textContent.trim() || document.getElementById('loading')) {
+                showError('No analysis to share yet. Please analyze a photo first.');
+                return;
+            }
+
+            const analysisText = analysisContent.innerText;
+            const shareData = {
+                title: 'Frame AI - Photography Analysis',
+                text: analysisText,
+                url: window.location.href
+            };
+
+            // Try to include image if supported
+            if (previewImage.src && navigator.canShare) {
+                try {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = previewImage.naturalWidth;
+                    canvas.height = previewImage.naturalHeight;
+                    ctx.drawImage(previewImage, 0, 0);
+
+                    canvas.toBlob(async (blob) => {
+                        const file = new File([blob], 'photo-analysis.png', { type: 'image/png' });
+                        const shareDataWithImage = {
+                            ...shareData,
+                            files: [file]
+                        };
+
+                        if (navigator.canShare && navigator.canShare(shareDataWithImage)) {
+                            try {
+                                await navigator.share(shareDataWithImage);
+                                return;
+                            } catch (e) {
+                                console.log('Share with image failed, falling back');
+                            }
+                        }
+
+                        // Fallback without image
+                        await shareWithoutImage(shareData);
+                    }, 'image/png');
+                    return;
+                } catch (e) {
+                    console.log('Image processing failed for share');
+                }
+            }
+
+            await shareWithoutImage(shareData);
+        }
+
+        async function shareWithoutImage(shareData) {
+            if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+                try {
+                    await navigator.share(shareData);
+                } catch (error) {
+                    if (error.name !== 'AbortError') {
+                        fallbackShare(shareData.text);
+                    }
+                }
+            } else {
+                fallbackShare(shareData.text);
+            }
+        }
+
+        function fallbackShare(text) {
+            // Create a temporary textarea to copy text
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+
+            showSuccess('Analysis copied to clipboard! You can now paste it anywhere.');
         }
     </script>
 </body>
