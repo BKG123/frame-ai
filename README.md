@@ -24,7 +24,7 @@ An AI-powered photography analysis and coaching tool that provides professional 
 
 1. Clone the repository:
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/BKG123/frame-ai.git
 cd frame-ai
 ```
 
