@@ -334,6 +334,48 @@
             background: #6366f1;
         }
 
+        .final-tip .section-icon {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Special styling for Final Tip section */
+        .final-tip {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            border: 2px solid #f59e0b;
+            border-radius: 12px;
+            margin-top: 1.5rem;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+        }
+
+        .final-tip .section-header {
+            background: rgba(245, 158, 11, 0.1);
+            border-radius: 8px 8px 0 0;
+            padding: 1rem 1.25rem;
+            margin: -1px -1px 0 -1px;
+            font-weight: 700;
+            color: #92400e;
+            font-size: 1.1rem;
+        }
+
+        .final-tip .section-content {
+            padding: 1.25rem;
+            background: rgba(255, 255, 255, 0.8);
+            margin: 0 -1px -1px -1px;
+            border-radius: 0 0 8px 8px;
+            font-size: 1rem;
+            line-height: 1.8;
+            color: #92400e;
+            font-weight: 500;
+        }
+
+        .final-tip .section-content::before {
+            content: "💫";
+            font-size: 1.5rem;
+            margin-right: 0.5rem;
+            vertical-align: middle;
+        }
+
         .analysis-section .section-content {
             color: #475569;
             line-height: 1.7;
@@ -530,6 +572,22 @@
             border-left-color: #3b82f6;
         }
 
+        /* Dark mode Final Tip styles */
+        body.dark .final-tip {
+            background: linear-gradient(135deg, #451a03 0%, #78350f 100%);
+            border-color: #f59e0b;
+        }
+
+        body.dark .final-tip .section-header {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fbbf24;
+        }
+
+        body.dark .final-tip .section-content {
+            background: rgba(0, 0, 0, 0.3);
+            color: #fbbf24;
+        }
+
         body.dark .pro-tip {
             background: #451a03;
             border-color: #f59e0b;
@@ -668,13 +726,20 @@
                             </svg>
                             Copy
                         </button>
-                        <button class="action-btn" id="share-btn" onclick="shareAnalysis()">
+                        <button class="action-btn" id="copy-image-btn" onclick="copyImage()">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
-                                <polyline points="16,6 12,2 8,6"/>
-                                <line x1="12" y1="2" x2="12" y2="15"/>
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                <circle cx="9" cy="9" r="2"/>
+                                <path d="M21 15l-3.5-3.5L9 20"/>
                             </svg>
-                            Share
+                            Copy Image
+                        </button>
+                        <button class="action-btn" id="copy-text-btn" onclick="copyText()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+                                <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+                            </svg>
+                            Copy Text
                         </button>
                     </div>
                 </div>
@@ -942,10 +1007,14 @@
                         sectionType = 'tips';
                         icon = '💡';
                         displayName = 'Professional Tips';
+                    } else if (sectionText.toLowerCase().includes('final tip')) {
+                        sectionType = 'final-tip';
+                        icon = '🌟';
+                        displayName = 'Final Tip';
                     }
 
-                    // Start new section (first section expanded, others collapsed)
-                    const collapsedClass = isFirstSection ? '' : ' collapsed';
+                    // Start new section (first section expanded, others collapsed, Final Tip always expanded)
+                    const collapsedClass = (isFirstSection || sectionType === 'final-tip') ? '' : ' collapsed';
                     cardHtml += `
                         <div class="analysis-section ${sectionType}${collapsedClass}">
                             <div class="section-header" onclick="toggleSection(this)">
@@ -1076,158 +1145,60 @@
             }, 5000);
         }
 
-        async function copyAnalysis() {
-            const copyBtn = document.getElementById('copy-btn');
+        async function copyImage() {
+            const copyImageBtn = document.getElementById('copy-image-btn');
             const previewImage = document.getElementById('preview-image');
-            const analysisContent = document.getElementById('analysis-content');
 
-            if (!analysisContent.textContent.trim() || document.getElementById('loading')) {
-                showError('No analysis to copy yet. Please analyze a photo first.');
+            if (!previewImage.src) {
+                showError('No image to copy. Please upload and analyze a photo first.');
                 return;
             }
 
             try {
-                // Get analysis text without HTML tags
-                const analysisText = analysisContent.innerText;
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = previewImage.naturalWidth;
+                canvas.height = previewImage.naturalHeight;
+                ctx.drawImage(previewImage, 0, 0);
 
-                // Try to copy image and text together if possible
-                if (previewImage.src && navigator.clipboard.write) {
+                canvas.toBlob(async (blob) => {
                     try {
-                        // Convert image to blob
-                        const canvas = document.createElement('canvas');
-                        const ctx = canvas.getContext('2d');
-                        canvas.width = previewImage.naturalWidth;
-                        canvas.height = previewImage.naturalHeight;
-                        ctx.drawImage(previewImage, 0, 0);
-
-                        canvas.toBlob(async (blob) => {
-                            const clipboardItems = [
-                                new ClipboardItem({
-                                    'image/png': blob,
-                                    'text/plain': new Blob([analysisText], { type: 'text/plain' })
-                                })
-                            ];
-
-                            try {
-                                await navigator.clipboard.write(clipboardItems);
-                                showCopySuccess(copyBtn, 'Image & analysis copied!');
-                            } catch (e) {
-                                // Fallback to text only
-                                await navigator.clipboard.writeText(analysisText);
-                                showCopySuccess(copyBtn, 'Analysis copied!');
-                            }
-                        }, 'image/png');
-                        return;
+                        const clipboardItem = new ClipboardItem({ 'image/png': blob });
+                        await navigator.clipboard.write([clipboardItem]);
+                        showCopySuccess(copyImageBtn, 'Image copied!');
                     } catch (e) {
-                        console.log('Image copy failed, falling back to text');
+                        console.error('Clipboard copy failed:', e);
+                        showError('Unable to copy image to clipboard. Your browser may not support this feature.');
                     }
-                }
-
-                // Fallback: copy text only
-                await navigator.clipboard.writeText(analysisText);
-                showCopySuccess(copyBtn, 'Analysis copied!');
-
+                }, 'image/png');
             } catch (error) {
-                console.error('Copy failed:', error);
-                showError('Failed to copy. Please try again.');
+                console.error('Image copy failed:', error);
+                showError('Failed to copy image. Please try again.');
             }
         }
 
-        function showCopySuccess(button, message) {
-            const originalText = button.innerHTML;
-            button.classList.add('success');
-            button.innerHTML = `
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M20 6L9 17l-5-5"/>
-                </svg>
-                ${message}
-            `;
-
-            setTimeout(() => {
-                button.classList.remove('success');
-                button.innerHTML = originalText;
-            }, 2000);
-        }
-
-        async function shareAnalysis() {
-            const shareBtn = document.getElementById('share-btn');
-            const previewImage = document.getElementById('preview-image');
+        async function copyText() {
+            const copyTextBtn = document.getElementById('copy-text-btn');
             const analysisContent = document.getElementById('analysis-content');
 
             if (!analysisContent.textContent.trim() || document.getElementById('loading')) {
-                showError('No analysis to share yet. Please analyze a photo first.');
+                showError('No analysis to copy. Please analyze a photo first.');
                 return;
             }
 
-            const analysisText = analysisContent.innerText;
-            const shareData = {
-                title: 'Frame AI - Photography Analysis',
-                text: analysisText,
-                url: window.location.href
-            };
-
-            // Try to include image if supported
-            if (previewImage.src && navigator.canShare) {
-                try {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    canvas.width = previewImage.naturalWidth;
-                    canvas.height = previewImage.naturalHeight;
-                    ctx.drawImage(previewImage, 0, 0);
-
-                    canvas.toBlob(async (blob) => {
-                        const file = new File([blob], 'photo-analysis.png', { type: 'image/png' });
-                        const shareDataWithImage = {
-                            ...shareData,
-                            files: [file]
-                        };
-
-                        if (navigator.canShare && navigator.canShare(shareDataWithImage)) {
-                            try {
-                                await navigator.share(shareDataWithImage);
-                                return;
-                            } catch (e) {
-                                console.log('Share with image failed, falling back');
-                            }
-                        }
-
-                        // Fallback without image
-                        await shareWithoutImage(shareData);
-                    }, 'image/png');
-                    return;
-                } catch (e) {
-                    console.log('Image processing failed for share');
-                }
-            }
-
-            await shareWithoutImage(shareData);
-        }
-
-        async function shareWithoutImage(shareData) {
-            if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
-                try {
-                    await navigator.share(shareData);
-                } catch (error) {
-                    if (error.name !== 'AbortError') {
-                        fallbackShare(shareData.text);
-                    }
-                }
-            } else {
-                fallbackShare(shareData.text);
+            try {
+                const analysisText = analysisContent.innerText;
+                await navigator.clipboard.writeText(analysisText);
+                showCopySuccess(copyTextBtn, 'Text copied!');
+            } catch (error) {
+                console.error('Text copy failed:', error);
+                showError('Failed to copy text. Please try again.');
             }
         }
 
-        function fallbackShare(text) {
-            // Create a temporary textarea to copy text
-            const textarea = document.createElement('textarea');
-            textarea.value = text;
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
 
-            showSuccess('Analysis copied to clipboard! You can now paste it anywhere.');
-        }
+
+
     </script>
 </body>
 </html>
