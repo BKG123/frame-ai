@@ -44,16 +44,24 @@ class PhotoAnalyzer:
                         analysis["other_data"][tag_name] = value
             # Create context from EXIF data
             exif_context = ""
-            if "technical_settings" in analysis:
+            if (
+                analysis["technical_settings"]
+                or analysis["camera_info"]
+                or analysis["other_data"]
+            ):
                 settings = analysis["technical_settings"]
+                camera = analysis["camera_info"]
                 exif_context = f"""
 
 **Available EXIF Data:**
+- Camera: {camera.get("Make", "Unknown")} {camera.get("Model", "")}
 - Aperture (f-stop): {settings.get("FNumber", "Not available")}
 - Shutter Speed: {settings.get("ExposureTime", "Not available")}
 - ISO: {settings.get("ISOSpeedRatings", "Not available")}
 - Focal Length: {settings.get("FocalLength", "Not available")}
 """
+            else:
+                exif_context = "\n**No EXIF data available in this image.**"
             return exif_context
 
         except Exception as e:
