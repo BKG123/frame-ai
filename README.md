@@ -41,7 +41,6 @@ uv sync
 3. Set up environment variables:
 ```bash
 cp .env.example .env
-# Edit .env and add your ANTHROPIC_API_KEY
 ```
 
 ### Running the Application
