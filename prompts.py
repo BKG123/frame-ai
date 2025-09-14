@@ -78,11 +78,7 @@ Present your final critique using the following markdown format:
 
 **Professional Tips:**
 * **For Your Next Shoot:** (A practical tip they can apply the next time they are in a similar shooting situation.)
-* **For Post-Processing This Image:** (Provide specific, non-destructive editing suggestions. Analyze the potential for improvement in the following areas):
-    * **Foundation Edits:** Suggest adjustments to Exposure, Contrast, Highlights, and Shadows to create a balanced tonal range. For example, "Try lifting the shadows slightly to reveal more detail in the dark areas."
-    * **Color Correction & Grading:** Comment on the White Balance. Suggest corrections for any color cast. You can also suggest creative color grading, like "Applying a slightly warmer temperature could enhance the sunset feel."
-    * **Compositional Tweaks:** Recommend a specific crop to strengthen the composition (e.g., a 16:9 cinematic crop) or suggest straightening the horizon or perspective.
-    * **Detail & Clarity:** Advise on appropriate Sharpening to make key elements pop or using Noise Reduction if the image was shot at a high ISO.
-    * **Local Adjustments:** Suggest advanced techniques using masks or brushes. For example, "Use a radial filter to slightly brighten the subject's face" or "Selectively desaturate the distracting blue object in the background to draw more attention to your subject."
-* **Final Tip:** (One final, memorable piece of advice.)
+
+**Final Tip:**
+* (One final, memorable piece of advice that will stick with the photographer and help them grow.)
 """
