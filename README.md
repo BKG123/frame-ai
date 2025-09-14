@@ -1,15 +1,17 @@
 # Frame AI - Photography Coach
 
-An AI-powered photography analysis and coaching tool that provides professional feedback on your photos through a modern web interface.
+An AI-powered photography analysis and coaching tool that provides professional feedback on your photos through a modern, responsive web interface with real-time streaming analysis.
 
 ## Features
 
-- 📸 **Professional Photo Analysis** - AI-powered critique based on photography principles
+- 📸 **Professional Photo Analysis** - AI-powered critique based on photography principles using Anthropic Claude
+- 🔄 **Real-Time Streaming** - Watch your analysis unfold in real-time with streaming responses
 - 🎯 **EXIF Data Analysis** - Extracts and analyzes technical camera settings
-- 🎨 **Basic Photo Editing** - Applies sample brightness, saturation, and sharpening adjustments
-- 📋 **Structured Feedback** - Organized strengths, improvements, and actionable tips
-- 🌐 **Web Interface** - Easy-to-use browser-based interface
-- 🚀 **FastAPI Backend** - Modern, high-performance API with automatic documentation
+- 📋 **Structured Analysis Cards** - Organized sections for strengths, improvements, and actionable tips with collapsible interface
+- 🌐 **Modern Web Interface** - Responsive, accessible design with drag-and-drop photo upload
+- 🌙 **Dark/Light Theme** - Toggle between themes with automatic system preference detection
+- 📋 **Copy & Share** - Easy sharing of analysis results with clipboard integration
+- 🚀 **FastAPI Backend** - High-performance API with streaming support and automatic documentation
 
 ## Quick Start
 
@@ -44,26 +46,26 @@ cp .env.example .env
 
 ### Running the Application
 
-Start the web server:
+Start the web server with hot reloading:
 ```bash
 uv run uvicorn main:app --reload
 ```
 
+Or run directly:
+```bash
+uv run python main.py
+```
+
 The application will be available at `http://localhost:8000`
 
-- **Web Interface**: `http://localhost:8000`
-- **API Documentation**: `http://localhost:8000/docs`
-- **Health Check**: `http://localhost:8000/health`
+- **Web Interface**: `http://localhost:8000` - Modern drag-and-drop photo analysis interface
+- **API Documentation**: `http://localhost:8000/docs` - Interactive FastAPI documentation
+- **Health Check**: `http://localhost:8000/health` - Service health status
 
 ## API Endpoints
 
 ### Photo Analysis
-- `POST /analyze` - Analyze a photo from URL
-- `POST /upload-analyze` - Upload and analyze a photo file
-
-### Photo Editing
-- `POST /edit` - Apply basic edits to a photo from URL
-- `POST /upload-edit` - Upload a photo and apply basic edits
+- `POST /upload` - Upload and analyze a photo with streaming response
 
 ### Utility
 - `GET /health` - Health check endpoint
@@ -91,14 +93,17 @@ uv run pre-commit install
 ```
 frame-ai/
 ├── config/          # Configuration and logging
+│   ├── __init__.py
+│   └── logger.py    # Logging configuration
 ├── services/        # Core business logic
-│   ├── analysis.py  # Photo analysis service
-│   ├── llm.py      # AI/LLM integration
+│   ├── analysis.py  # Photo analysis service with streaming
+│   ├── llm.py      # AI/LLM integration (Anthropic Claude)
 │   └── tools.py    # Image processing utilities
-├── static/         # Web interface assets
-├── main.py         # FastAPI application entry point
-├── prompts.py      # AI prompt templates
-└── pyproject.toml  # Project configuration
+├── static/
+│   └── index.html  # Modern responsive web interface with streaming UI
+├── main.py         # FastAPI application with streaming endpoints
+├── prompts.py      # AI prompt templates for photography analysis
+└── pyproject.toml  # Project configuration with uv dependencies
 ```
 
 ## Contributing
