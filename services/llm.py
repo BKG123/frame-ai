@@ -106,6 +106,8 @@ async def gemini_llm_call_stream(
     user_prompt: str | None,
     model_name: str,
     temperature: float = 0.1,
+    json_format: None = None,
+    is_thinking_enabled: bool = True,
     image_urls: list[str] = [],
     image_file_path: str | None = None,
     **kwargs,
@@ -116,11 +118,19 @@ async def gemini_llm_call_stream(
             api_key=os.getenv("GEMINI_API_KEY"),
         )
 
+        if is_thinking_enabled:
+            thinking_budget = kwargs.get("thinking_budget", 1024)
+        else:
+            thinking_budget = 0
+
+        response_mime_type = "application/json" if json_format else "text/plain"
+
         config = types.GenerateContentConfig(
-            response_mime_type="text/plain",
+            response_mime_type=response_mime_type,
             temperature=temperature,
             top_p=0.95,
             top_k=64,
+            thinking_config=types.ThinkingConfig(thinking_budget=thinking_budget),
             system_instruction=system_prompt,
         )
 

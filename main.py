@@ -54,7 +54,7 @@ async def root():
             "message": "Welcome to Frame AI - Your Photography Coach",
             "version": "0.1.0",
             "endpoints": {
-                "upload": "/upload - Upload and analyze a photo",
+                "upload": "/upload - Upload and analyze a photo (detailed + concise analysis)",
                 "docs": "/docs - API documentation",
             },
         }
