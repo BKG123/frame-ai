@@ -1077,6 +1077,7 @@
             conciseAnalysis = null;
             detailedAnalysis = null;
             window.conciseBuffer = '';
+            window.isJsonMode = false;
 
             setTimeout(() => {
                 const progressFill = document.getElementById('progress-fill');
@@ -1132,80 +1133,71 @@
 
                                         // Update detailed analysis display
                                         updateDetailedAnalysisDisplay(detailedText);
+                                    } else if (data.content.includes(' *#123JSON PARSING START:')) {
+                                        // This marks the start of JSON streaming - initialize JSON buffer
+                                        window.isJsonMode = true;
+                                        window.conciseBuffer = '';
+                                        console.log('JSON parsing mode started');
                                     } else {
-                                        // Check if this chunk contains JSON (concise analysis)
-                                        try {
-                                            // Check if data.content looks like JSON or contains JSON markers
-                                            const content = data.content.trim();
+                                        // Check if we're in JSON mode or this chunk contains JSON (concise analysis)
+                                        const content = data.content.trim();
 
-                                            // Initialize buffer if not exists
-                                            if (!window.conciseBuffer) window.conciseBuffer = '';
+                                        // Initialize buffer if not exists
+                                        if (!window.conciseBuffer) window.conciseBuffer = '';
+
+                                        // If we're in JSON mode or this looks like JSON content
+                                        if (window.isJsonMode || content.includes('```json') || content.includes('{') ||
+                                            content.includes('"overall_impression"') || content.includes('"concise_bullet_points"')) {
 
                                             // Always accumulate content for potential JSON parsing
                                             window.conciseBuffer += content;
 
-                                            // Check if this chunk might be JSON related
-                                            const hasJsonMarker = window.conciseBuffer.includes('```json') ||
-                                                                window.conciseBuffer.includes('{') ||
-                                                                window.conciseBuffer.includes('"overall_impression"') ||
-                                                                window.conciseBuffer.includes('"concise_bullet_points"');
+                                            console.log('Accumulating JSON buffer:', window.conciseBuffer);
 
-                                            if (hasJsonMarker) {
-                                                console.log('Accumulating potential JSON buffer:', window.conciseBuffer);
+                                            // Try to extract and parse JSON
+                                            let jsonContent = '';
 
-                                                // Try to extract and parse JSON
-                                                let jsonContent = '';
-
-                                                // Check for JSON in markdown blocks
-                                                if (window.conciseBuffer.includes('```json') && window.conciseBuffer.includes('```', window.conciseBuffer.indexOf('```json') + 7)) {
-                                                    const jsonStart = window.conciseBuffer.indexOf('```json') + 7;
-                                                    const jsonEnd = window.conciseBuffer.indexOf('```', jsonStart);
+                                            // Check for JSON in markdown blocks
+                                            if (window.conciseBuffer.includes('```json') && window.conciseBuffer.includes('```', window.conciseBuffer.indexOf('```json') + 7)) {
+                                                const jsonStart = window.conciseBuffer.indexOf('```json') + 7;
+                                                const jsonEnd = window.conciseBuffer.indexOf('```', jsonStart);
+                                                jsonContent = window.conciseBuffer.substring(jsonStart, jsonEnd).trim();
+                                            }
+                                            // Check for raw JSON (fallback)
+                                            else if (window.conciseBuffer.includes('{') && window.conciseBuffer.includes('}')) {
+                                                const jsonStart = window.conciseBuffer.indexOf('{');
+                                                const jsonEnd = window.conciseBuffer.lastIndexOf('}') + 1;
+                                                if (jsonEnd > jsonStart) {
                                                     jsonContent = window.conciseBuffer.substring(jsonStart, jsonEnd).trim();
                                                 }
-                                                // Check for raw JSON (fallback)
-                                                else if (window.conciseBuffer.includes('{') && window.conciseBuffer.includes('}')) {
-                                                    const jsonStart = window.conciseBuffer.indexOf('{');
-                                                    const jsonEnd = window.conciseBuffer.lastIndexOf('}') + 1;
-                                                    if (jsonEnd > jsonStart) {
-                                                        jsonContent = window.conciseBuffer.substring(jsonStart, jsonEnd).trim();
-                                                    }
-                                                }
-
-                                                // Try to parse if we have potential JSON content
-                                                if (jsonContent && jsonContent.includes('"overall_impression"')) {
-                                                    try {
-                                                        conciseAnalysis = JSON.parse(jsonContent);
-                                                        console.log('Successfully parsed JSON:', conciseAnalysis);
-
-                                                        // Update display
-                                                        updateQuickAnalysisDisplay();
-
-                                                        // Clear buffer since we successfully parsed
-                                                        window.conciseBuffer = '';
-                                                    } catch (parseError) {
-                                                        console.log('JSON parse error:', parseError);
-                                                        console.log('Attempted to parse:', jsonContent);
-                                                        // Continue accumulating - might need more chunks
-                                                    }
-                                                }
                                             }
 
-                                            // If this doesn't look like JSON content, treat as detailed analysis
-                                            if (!hasJsonMarker && !content.includes('```')) {
-                                                if (detailedAnalysis) {
-                                                    detailedAnalysis += content;
-                                                } else {
-                                                    detailedAnalysis = content;
+                                            // Try to parse if we have potential JSON content
+                                            if (jsonContent && jsonContent.includes('"overall_impression"')) {
+                                                try {
+                                                    conciseAnalysis = JSON.parse(jsonContent);
+                                                    console.log('Successfully parsed JSON:', conciseAnalysis);
+
+                                                    // Update display
+                                                    updateQuickAnalysisDisplay();
+
+                                                    // Clear buffer and exit JSON mode since we successfully parsed
+                                                    window.conciseBuffer = '';
+                                                    window.isJsonMode = false;
+                                                } catch (parseError) {
+                                                    console.log('JSON parse error:', parseError);
+                                                    console.log('Attempted to parse:', jsonContent);
+                                                    // Continue accumulating - might need more chunks
                                                 }
-                                                updateDetailedAnalysisDisplay(detailedAnalysis);
                                             }
-                                        } catch (e) {
-                                            console.error('Error processing chunk:', e);
-                                            // If it's not JSON, treat as regular content - likely continuation of detailed analysis
+                                        } else {
+                                            // This doesn't look like JSON content, treat as detailed analysis
                                             if (detailedAnalysis) {
-                                                detailedAnalysis += data.content;
-                                                updateDetailedAnalysisDisplay(detailedAnalysis);
+                                                detailedAnalysis += content;
+                                            } else {
+                                                detailedAnalysis = content;
                                             }
+                                            updateDetailedAnalysisDisplay(detailedAnalysis);
                                         }
                                     }
                                 } else if (data.type === 'error') {

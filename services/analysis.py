@@ -88,6 +88,8 @@ class PhotoAnalyzer:
             print(analysis_response)
             yield f"DETAILED ANALYSIS: {analysis_response}"
 
+            yield " *#123JSON PARSING START: "
+
             # Stream the converted JSON analysis (keeping original behavior)
             async for chunk in gemini_llm_call_stream(
                 system_prompt=ANALYSE_JSON_SYSTEM_PROMPT,
