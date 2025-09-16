@@ -93,3 +93,6 @@ Convert the given photographic report into this JSON format
   }
 }
 """
+IMAGE_GEN_SYSTEM_INSTRUCTION = """
+Given a photograph and its detailed analysis generate the edited version of the image fixing the issues mentioned. In the text, only return the points fixed
+"""
