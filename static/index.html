@@ -258,6 +258,106 @@
             border-bottom: 1px solid #f1f5f9;
         }
 
+        .concise-analysis {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .concise-header {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .concise-content {
+            margin-bottom: 1rem;
+        }
+
+        .concise-impression {
+            font-style: italic;
+            color: #475569;
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background: white;
+            border-radius: 6px;
+            border-left: 3px solid #6366f1;
+        }
+
+        .concise-points {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .concise-point {
+            background: white;
+            padding: 0.75rem;
+            border-radius: 6px;
+            border-left: 3px solid #e2e8f0;
+        }
+
+        .concise-point.technical {
+            border-left-color: #3b82f6;
+        }
+
+        .concise-point.artistic {
+            border-left-color: #10b981;
+        }
+
+        .concise-point.best-practice {
+            border-left-color: #f59e0b;
+        }
+
+        .concise-point.next-step {
+            border-left-color: #8b5cf6;
+        }
+
+        .point-label {
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+            margin-bottom: 0.25rem;
+            color: #64748b;
+        }
+
+        .point-content {
+            color: #475569;
+            line-height: 1.5;
+        }
+
+        body.dark .concise-analysis {
+            background: #334155;
+            border-color: #475569;
+        }
+
+        body.dark .concise-header {
+            color: #e2e8f0;
+        }
+
+        body.dark .concise-impression {
+            background: #1e293b;
+            color: #cbd5e1;
+        }
+
+        body.dark .concise-point {
+            background: #1e293b;
+        }
+
+        body.dark .point-label {
+            color: #94a3b8;
+        }
+
+        body.dark .point-content {
+            color: #cbd5e1;
+        }
+
         .analysis-section:last-child {
             border-bottom: none;
             margin-bottom: 0;
@@ -572,6 +672,73 @@
             border-top-color: #6366f1;
         }
 
+        /* Tab styles */
+        .analysis-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            color: #64748b;
+            border-bottom: 2px solid transparent;
+            position: relative;
+        }
+
+        .tab-btn:hover {
+            color: #6366f1;
+            background: #f8fafc;
+        }
+
+        .tab-btn.active {
+            color: #6366f1;
+            border-bottom-color: #6366f1;
+            background: #f8fafc;
+        }
+
+        .tab-btn span {
+            font-size: 1rem;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        body.dark .analysis-tabs {
+            border-bottom-color: #334155;
+        }
+
+        body.dark .tab-btn {
+            color: #94a3b8;
+        }
+
+        body.dark .tab-btn:hover {
+            color: #6366f1;
+            background: #334155;
+        }
+
+        body.dark .tab-btn.active {
+            color: #6366f1;
+            background: #334155;
+        }
+
         .error {
             color: #dc2626;
             background: #fef2f2;
@@ -713,16 +880,44 @@
                         </button>
                     </div>
                 </div>
+
+                <div class="analysis-tabs">
+                    <button class="tab-btn active" onclick="switchTab('quick')" id="quick-tab">
+                        <span>⚡</span>
+                        Quick Analysis
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('detailed')" id="detailed-tab">
+                        <span>📋</span>
+                        Detailed Analysis
+                    </button>
+                </div>
+
                 <div class="analysis-content" id="analysis-content">
-                    <div class="loading" id="loading">
-                        <div class="progress-container">
-                            <div class="progress-bar">
-                                <div class="progress-fill" id="progress-fill"></div>
+                    <div class="tab-content active" id="quick-content">
+                        <div class="loading" id="quick-loading">
+                            <div class="progress-container">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="progress-fill"></div>
+                                </div>
+                                <div class="progress-message" id="progress-message">
+                                    <div class="spinner"></div>
+                                    <span id="progress-text">Initializing analysis...</span>
+                                    <span class="progress-percentage" id="progress-percentage">0%</span>
+                                </div>
                             </div>
-                            <div class="progress-message" id="progress-message">
-                                <div class="spinner"></div>
-                                <span id="progress-text">Initializing analysis...</span>
-                                <span class="progress-percentage" id="progress-percentage">0%</span>
+                        </div>
+                    </div>
+                    <div class="tab-content" id="detailed-content">
+                        <div class="loading" id="detailed-loading" style="display: none;">
+                            <div class="progress-container">
+                                <div class="progress-bar">
+                                    <div class="progress-fill"></div>
+                                </div>
+                                <div class="progress-message">
+                                    <div class="spinner"></div>
+                                    <span>Loading detailed analysis...</span>
+                                    <span class="progress-percentage">0%</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -741,6 +936,9 @@
         const analysisContent = document.getElementById('analysis-content');
 
         let selectedFile = null;
+        let conciseAnalysis = null;
+        let detailedAnalysis = null;
+        let activeTab = 'quick';
 
         const progressStages = [
             { progress: 15, message: 'Uploading image...', icon: '📤' },
@@ -752,6 +950,18 @@
         ];
 
         let currentStageIndex = 0;
+
+        function switchTab(tabName) {
+            activeTab = tabName;
+
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabName + '-tab').classList.add('active');
+
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tabName + '-content').classList.add('active');
+        }
 
         uploadArea.addEventListener('click', () => {
             fileInput.click();
@@ -828,8 +1038,12 @@
         async function analyzePhoto(file) {
             analysisArea.style.display = 'block';
 
-            analysisContent.innerHTML = `
-                <div class="loading" id="loading">
+            // Reset both tab contents
+            const quickContent = document.getElementById('quick-content');
+            const detailedContent = document.getElementById('detailed-content');
+
+            quickContent.innerHTML = `
+                <div class="loading" id="quick-loading">
                     <div class="progress-container">
                         <div class="progress-bar">
                             <div class="progress-fill" id="progress-fill"></div>
@@ -843,7 +1057,26 @@
                 </div>
             `;
 
+            detailedContent.innerHTML = `
+                <div class="loading" id="detailed-loading">
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                        <div class="progress-message">
+                            <div class="spinner"></div>
+                            <span>Loading detailed analysis...</span>
+                            <span class="progress-percentage">0%</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Reset variables for new analysis
             currentStageIndex = 0;
+            conciseAnalysis = null;
+            detailedAnalysis = null;
+            window.conciseBuffer = '';
 
             setTimeout(() => {
                 const progressFill = document.getElementById('progress-fill');
@@ -887,19 +1120,99 @@
                                 const data = JSON.parse(line.slice(6));
 
                                 if (data.type === 'chunk') {
-                                    analysisText += data.content;
-                                    // Remove loading state after first chunk arrives
-                                    if (document.getElementById('loading')) {
-                                        analysisContent.innerHTML = '';
+                                    // Check if this is a detailed analysis chunk
+                                    if (data.content.startsWith('DETAILED ANALYSIS:')) {
+                                        // Extract the detailed analysis content
+                                        const detailedText = data.content.replace('DETAILED ANALYSIS: ', '');
+                                        detailedAnalysis = detailedText;
+
+                                        // Remove loading state from detailed tab
+                                        const detailedContent = document.getElementById('detailed-content');
+                                        detailedContent.innerHTML = '';
+
+                                        // Update detailed analysis display
+                                        updateDetailedAnalysisDisplay(detailedText);
+                                    } else {
+                                        // Check if this chunk contains JSON (concise analysis)
+                                        try {
+                                            // Check if data.content looks like JSON or contains JSON markers
+                                            const content = data.content.trim();
+
+                                            // Initialize buffer if not exists
+                                            if (!window.conciseBuffer) window.conciseBuffer = '';
+
+                                            // Always accumulate content for potential JSON parsing
+                                            window.conciseBuffer += content;
+
+                                            // Check if this chunk might be JSON related
+                                            const hasJsonMarker = window.conciseBuffer.includes('```json') ||
+                                                                window.conciseBuffer.includes('{') ||
+                                                                window.conciseBuffer.includes('"overall_impression"') ||
+                                                                window.conciseBuffer.includes('"concise_bullet_points"');
+
+                                            if (hasJsonMarker) {
+                                                console.log('Accumulating potential JSON buffer:', window.conciseBuffer);
+
+                                                // Try to extract and parse JSON
+                                                let jsonContent = '';
+
+                                                // Check for JSON in markdown blocks
+                                                if (window.conciseBuffer.includes('```json') && window.conciseBuffer.includes('```', window.conciseBuffer.indexOf('```json') + 7)) {
+                                                    const jsonStart = window.conciseBuffer.indexOf('```json') + 7;
+                                                    const jsonEnd = window.conciseBuffer.indexOf('```', jsonStart);
+                                                    jsonContent = window.conciseBuffer.substring(jsonStart, jsonEnd).trim();
+                                                }
+                                                // Check for raw JSON (fallback)
+                                                else if (window.conciseBuffer.includes('{') && window.conciseBuffer.includes('}')) {
+                                                    const jsonStart = window.conciseBuffer.indexOf('{');
+                                                    const jsonEnd = window.conciseBuffer.lastIndexOf('}') + 1;
+                                                    if (jsonEnd > jsonStart) {
+                                                        jsonContent = window.conciseBuffer.substring(jsonStart, jsonEnd).trim();
+                                                    }
+                                                }
+
+                                                // Try to parse if we have potential JSON content
+                                                if (jsonContent && jsonContent.includes('"overall_impression"')) {
+                                                    try {
+                                                        conciseAnalysis = JSON.parse(jsonContent);
+                                                        console.log('Successfully parsed JSON:', conciseAnalysis);
+
+                                                        // Update display
+                                                        updateQuickAnalysisDisplay();
+
+                                                        // Clear buffer since we successfully parsed
+                                                        window.conciseBuffer = '';
+                                                    } catch (parseError) {
+                                                        console.log('JSON parse error:', parseError);
+                                                        console.log('Attempted to parse:', jsonContent);
+                                                        // Continue accumulating - might need more chunks
+                                                    }
+                                                }
+                                            }
+
+                                            // If this doesn't look like JSON content, treat as detailed analysis
+                                            if (!hasJsonMarker && !content.includes('```')) {
+                                                if (detailedAnalysis) {
+                                                    detailedAnalysis += content;
+                                                } else {
+                                                    detailedAnalysis = content;
+                                                }
+                                                updateDetailedAnalysisDisplay(detailedAnalysis);
+                                            }
+                                        } catch (e) {
+                                            console.error('Error processing chunk:', e);
+                                            // If it's not JSON, treat as regular content - likely continuation of detailed analysis
+                                            if (detailedAnalysis) {
+                                                detailedAnalysis += data.content;
+                                                updateDetailedAnalysisDisplay(detailedAnalysis);
+                                            }
+                                        }
                                     }
-                                    // Update content with streaming data in real-time
-                                    analysisContent.innerHTML = enhanceAnalysisContent(marked.parse(analysisText));
                                 } else if (data.type === 'error') {
                                     showError('Analysis error: ' + data.content);
                                     return;
                                 } else if (data.type === 'done') {
-                                    const enhancedContent = enhanceAnalysisContent(marked.parse(analysisText));
-                                    analysisContent.innerHTML = enhancedContent;
+                                    // Analysis complete
                                     return;
                                 }
                             } catch (e) {
@@ -915,6 +1228,54 @@
             } finally {
                 analyzeBtn.disabled = false;
             }
+        }
+
+        function updateQuickAnalysisDisplay() {
+            const quickContent = document.getElementById('quick-content');
+            if (conciseAnalysis) {
+                quickContent.innerHTML = renderConciseAnalysis(conciseAnalysis);
+            }
+        }
+
+        function updateDetailedAnalysisDisplay(analysisText) {
+            const detailedContent = document.getElementById('detailed-content');
+            const enhancedContent = enhanceAnalysisContent(marked.parse(analysisText));
+            detailedContent.innerHTML = enhancedContent;
+        }
+
+        function renderConciseAnalysis(conciseData) {
+            const points = conciseData.concise_bullet_points;
+            return `
+                <div class="concise-analysis">
+                    <div class="concise-header">
+                        <span>⚡</span>
+                        Quick Analysis
+                    </div>
+                    <div class="concise-content">
+                        <div class="concise-impression">
+                            ${conciseData.overall_impression}
+                        </div>
+                        <div class="concise-points">
+                            <div class="concise-point technical">
+                                <div class="point-label">Technical</div>
+                                <div class="point-content">${points.technical}</div>
+                            </div>
+                            <div class="concise-point artistic">
+                                <div class="point-label">Artistic</div>
+                                <div class="point-content">${points.artistic}</div>
+                            </div>
+                            <div class="concise-point best-practice">
+                                <div class="point-label">Best Practice</div>
+                                <div class="point-content">${points.best_practice}</div>
+                            </div>
+                            <div class="concise-point next-step">
+                                <div class="point-label">Next Step</div>
+                                <div class="point-content">${points.next_step}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
         function enhanceAnalysisContent(htmlContent) {
@@ -1168,15 +1529,15 @@
 
         async function copyText() {
             const copyTextBtn = document.getElementById('copy-text-btn');
-            const analysisContent = document.getElementById('analysis-content');
+            const activeTabContent = document.querySelector('.tab-content.active');
 
-            if (!analysisContent.textContent.trim() || document.getElementById('loading')) {
+            if (!activeTabContent || !activeTabContent.textContent.trim() || activeTabContent.querySelector('.loading')) {
                 showError('No analysis to copy. Please analyze a photo first.');
                 return;
             }
 
             try {
-                const analysisText = analysisContent.innerText;
+                const analysisText = activeTabContent.innerText;
                 await navigator.clipboard.writeText(analysisText);
                 showCopySuccess(copyTextBtn, 'Text copied!');
             } catch (error) {

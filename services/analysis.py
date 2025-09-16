@@ -1,6 +1,10 @@
 from typing import Dict, Any, Union
-from services.llm import gemini_llm_call_stream
-from prompts import ANALYSE_SYSTEM_PROMPT, ANALYSE_USER_PROMPT
+from services.llm import gemini_llm_call_stream, gemini_llm_call
+from prompts import (
+    ANALYSE_SYSTEM_PROMPT,
+    ANALYSE_USER_PROMPT,
+    ANALYSE_JSON_SYSTEM_PROMPT,
+)
 
 
 class PhotoAnalyzer:
@@ -73,14 +77,24 @@ class PhotoAnalyzer:
             # Get EXIF data
             exif_context = self.get_exif_context_from_file(file_path)
             user_prompt = ANALYSE_USER_PROMPT.format(exif_context=exif_context)
-            # Stream analysis results
-            async for chunk in gemini_llm_call_stream(
+
+            # Get detailed analysis
+            analysis_response = await gemini_llm_call(
                 system_prompt=ANALYSE_SYSTEM_PROMPT,
                 user_prompt=user_prompt,
                 model_name="gemini-2.5-flash",
                 image_file_path=file_path,
+            )
+            print(analysis_response)
+            yield f"DETAILED ANALYSIS: {analysis_response}"
+
+            # Stream the converted JSON analysis (keeping original behavior)
+            async for chunk in gemini_llm_call_stream(
+                system_prompt=ANALYSE_JSON_SYSTEM_PROMPT,
+                user_prompt=analysis_response,
+                model_name="gemini-2.5-flash",
+                image_file_path=file_path,
             ):
                 yield chunk
-
         except Exception as e:
             yield f"Error analyzing photo: {e}"
