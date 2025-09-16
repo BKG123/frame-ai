@@ -23,6 +23,7 @@ async def gemini_llm_call(
     json_format: None = None,
     is_thinking_enabled: bool = True,
     image_urls: list[str] = [],
+    image_file_path: str | None = None,
     url_context: None = None,
     **kwargs,
 ):
@@ -81,6 +82,28 @@ async def gemini_llm_call(
             except Exception as e:
                 logger.error(f"Warning: Skipping image {url} due to error: {e}")
 
+        # Attach image from file path if provided
+        if image_file_path:
+            try:
+                with open(image_file_path, "rb") as f:
+                    image_data = f.read()
+
+                # Determine MIME type
+                mime_type, _ = guess_type(image_file_path)
+                if not mime_type:
+                    mime_type = "image/jpeg"
+
+                # Wrap the image bytes into a Part
+                image_part = types.Part.from_bytes(
+                    data=image_data,
+                    mime_type=mime_type,
+                )
+                contents.append(image_part)
+            except Exception as e:
+                logger.error(
+                    f"Warning: Skipping image file {image_file_path} due to error: {e}"
+                )
+
         # Call the Gemini API with combined contents (images + prompt)
         response = client.models.generate_content(
             model=model_name,
@@ -94,6 +117,8 @@ async def gemini_llm_call(
         if image_urls:
             for url in image_urls:
                 messages.append({"role": "user", "content": f"[Attached {url}]"})
+
+        print(messages)
         return response.text
 
     except Exception as e:

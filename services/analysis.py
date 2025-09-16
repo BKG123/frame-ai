@@ -85,6 +85,7 @@ class PhotoAnalyzer:
                 model_name="gemini-2.5-flash",
                 image_file_path=file_path,
             )
+            print(analysis_response)
             yield f"DETAILED ANALYSIS: {analysis_response}"
 
             # Stream the converted JSON analysis (keeping original behavior)

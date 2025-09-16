@@ -258,6 +258,106 @@
             border-bottom: 1px solid #f1f5f9;
         }
 
+        .concise-analysis {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .concise-header {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .concise-content {
+            margin-bottom: 1rem;
+        }
+
+        .concise-impression {
+            font-style: italic;
+            color: #475569;
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background: white;
+            border-radius: 6px;
+            border-left: 3px solid #6366f1;
+        }
+
+        .concise-points {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .concise-point {
+            background: white;
+            padding: 0.75rem;
+            border-radius: 6px;
+            border-left: 3px solid #e2e8f0;
+        }
+
+        .concise-point.technical {
+            border-left-color: #3b82f6;
+        }
+
+        .concise-point.artistic {
+            border-left-color: #10b981;
+        }
+
+        .concise-point.best-practice {
+            border-left-color: #f59e0b;
+        }
+
+        .concise-point.next-step {
+            border-left-color: #8b5cf6;
+        }
+
+        .point-label {
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+            margin-bottom: 0.25rem;
+            color: #64748b;
+        }
+
+        .point-content {
+            color: #475569;
+            line-height: 1.5;
+        }
+
+        body.dark .concise-analysis {
+            background: #334155;
+            border-color: #475569;
+        }
+
+        body.dark .concise-header {
+            color: #e2e8f0;
+        }
+
+        body.dark .concise-impression {
+            background: #1e293b;
+            color: #cbd5e1;
+        }
+
+        body.dark .concise-point {
+            background: #1e293b;
+        }
+
+        body.dark .point-label {
+            color: #94a3b8;
+        }
+
+        body.dark .point-content {
+            color: #cbd5e1;
+        }
+
         .analysis-section:last-child {
             border-bottom: none;
             margin-bottom: 0;
@@ -741,6 +841,7 @@
         const analysisContent = document.getElementById('analysis-content');
 
         let selectedFile = null;
+        let conciseAnalysis = null;
 
         const progressStages = [
             { progress: 15, message: 'Uploading image...', icon: '📤' },
@@ -843,7 +944,10 @@
                 </div>
             `;
 
+            // Reset variables for new analysis
             currentStageIndex = 0;
+            conciseAnalysis = null;
+            window.conciseBuffer = '';
 
             setTimeout(() => {
                 const progressFill = document.getElementById('progress-fill');
@@ -887,19 +991,53 @@
                                 const data = JSON.parse(line.slice(6));
 
                                 if (data.type === 'chunk') {
-                                    analysisText += data.content;
-                                    // Remove loading state after first chunk arrives
-                                    if (document.getElementById('loading')) {
-                                        analysisContent.innerHTML = '';
+                                    // Check if this is a detailed analysis chunk
+                                    if (data.content.startsWith('DETAILED ANALYSIS:')) {
+                                        // Extract the detailed analysis content
+                                        const detailedContent = data.content.replace('DETAILED ANALYSIS: ', '');
+                                        analysisText = detailedContent; // Set, don't append for detailed analysis
+                                        // Remove loading state after first chunk arrives
+                                        if (document.getElementById('loading')) {
+                                            analysisContent.innerHTML = '';
+                                        }
+                                        // Update content with detailed analysis
+                                        updateAnalysisDisplay(analysisText);
+                                    } else {
+                                        // Check if this chunk contains JSON (concise analysis)
+                                        try {
+                                            // Try to parse as JSON to see if it's concise analysis
+                                            if (!window.conciseBuffer) window.conciseBuffer = '';
+                                            window.conciseBuffer += data.content;
+
+                                            // Try to parse the accumulated buffer as JSON
+                                            const possibleJson = window.conciseBuffer.trim();
+                                            if (possibleJson.startsWith('{') && possibleJson.endsWith('}')) {
+                                                try {
+                                                    conciseAnalysis = JSON.parse(possibleJson);
+                                                    // Successfully parsed, update display
+                                                    updateConciseAnalysis();
+                                                    // Clear buffer
+                                                    window.conciseBuffer = '';
+                                                } catch (parseError) {
+                                                    // Not valid JSON yet, continue accumulating
+                                                }
+                                            }
+                                        } catch (e) {
+                                            // If it's not JSON, treat as regular content
+                                            analysisText += data.content;
+                                            // Remove loading state after first chunk arrives
+                                            if (document.getElementById('loading')) {
+                                                analysisContent.innerHTML = '';
+                                            }
+                                            // Update content with streaming data
+                                            updateAnalysisDisplay(analysisText);
+                                        }
                                     }
-                                    // Update content with streaming data in real-time
-                                    analysisContent.innerHTML = enhanceAnalysisContent(marked.parse(analysisText));
                                 } else if (data.type === 'error') {
                                     showError('Analysis error: ' + data.content);
                                     return;
                                 } else if (data.type === 'done') {
-                                    const enhancedContent = enhanceAnalysisContent(marked.parse(analysisText));
-                                    analysisContent.innerHTML = enhancedContent;
+                                    updateAnalysisDisplay(analysisText);
                                     return;
                                 }
                             } catch (e) {
@@ -915,6 +1053,68 @@
             } finally {
                 analyzeBtn.disabled = false;
             }
+        }
+
+        function updateAnalysisDisplay(analysisText) {
+            const enhancedContent = enhanceAnalysisContent(marked.parse(analysisText));
+
+            // Create the full content with both concise and detailed analysis
+            let fullContent = '';
+
+            // Add concise analysis if available
+            if (conciseAnalysis) {
+                fullContent += renderConciseAnalysis(conciseAnalysis);
+            }
+
+            // Add detailed analysis
+            fullContent += enhancedContent;
+
+            analysisContent.innerHTML = fullContent;
+        }
+
+        function updateConciseAnalysis() {
+            // If we have analysis text, update the full display
+            const currentContent = analysisContent.innerHTML;
+            if (currentContent && !document.getElementById('loading')) {
+                // Find the detailed analysis part and update with concise included
+                const detailedContent = currentContent.replace(/<div class="concise-analysis">.*?<\/div>/s, '');
+                analysisContent.innerHTML = renderConciseAnalysis(conciseAnalysis) + detailedContent;
+            }
+        }
+
+        function renderConciseAnalysis(conciseData) {
+            const points = conciseData.concise_bullet_points;
+            return `
+                <div class="concise-analysis">
+                    <div class="concise-header">
+                        <span>⚡</span>
+                        Quick Analysis
+                    </div>
+                    <div class="concise-content">
+                        <div class="concise-impression">
+                            ${conciseData.overall_impression}
+                        </div>
+                        <div class="concise-points">
+                            <div class="concise-point technical">
+                                <div class="point-label">Technical</div>
+                                <div class="point-content">${points.technical}</div>
+                            </div>
+                            <div class="concise-point artistic">
+                                <div class="point-label">Artistic</div>
+                                <div class="point-content">${points.artistic}</div>
+                            </div>
+                            <div class="concise-point best-practice">
+                                <div class="point-label">Best Practice</div>
+                                <div class="point-content">${points.best_practice}</div>
+                            </div>
+                            <div class="concise-point next-step">
+                                <div class="point-label">Next Step</div>
+                                <div class="point-content">${points.next_step}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
         function enhanceAnalysisContent(htmlContent) {
