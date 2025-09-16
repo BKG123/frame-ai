@@ -672,6 +672,73 @@
             border-top-color: #6366f1;
         }
 
+        /* Tab styles */
+        .analysis-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            color: #64748b;
+            border-bottom: 2px solid transparent;
+            position: relative;
+        }
+
+        .tab-btn:hover {
+            color: #6366f1;
+            background: #f8fafc;
+        }
+
+        .tab-btn.active {
+            color: #6366f1;
+            border-bottom-color: #6366f1;
+            background: #f8fafc;
+        }
+
+        .tab-btn span {
+            font-size: 1rem;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        body.dark .analysis-tabs {
+            border-bottom-color: #334155;
+        }
+
+        body.dark .tab-btn {
+            color: #94a3b8;
+        }
+
+        body.dark .tab-btn:hover {
+            color: #6366f1;
+            background: #334155;
+        }
+
+        body.dark .tab-btn.active {
+            color: #6366f1;
+            background: #334155;
+        }
+
         .error {
             color: #dc2626;
             background: #fef2f2;
@@ -813,16 +880,44 @@
                         </button>
                     </div>
                 </div>
+
+                <div class="analysis-tabs">
+                    <button class="tab-btn active" onclick="switchTab('quick')" id="quick-tab">
+                        <span>⚡</span>
+                        Quick Analysis
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('detailed')" id="detailed-tab">
+                        <span>📋</span>
+                        Detailed Analysis
+                    </button>
+                </div>
+
                 <div class="analysis-content" id="analysis-content">
-                    <div class="loading" id="loading">
-                        <div class="progress-container">
-                            <div class="progress-bar">
-                                <div class="progress-fill" id="progress-fill"></div>
+                    <div class="tab-content active" id="quick-content">
+                        <div class="loading" id="quick-loading">
+                            <div class="progress-container">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="progress-fill"></div>
+                                </div>
+                                <div class="progress-message" id="progress-message">
+                                    <div class="spinner"></div>
+                                    <span id="progress-text">Initializing analysis...</span>
+                                    <span class="progress-percentage" id="progress-percentage">0%</span>
+                                </div>
                             </div>
-                            <div class="progress-message" id="progress-message">
-                                <div class="spinner"></div>
-                                <span id="progress-text">Initializing analysis...</span>
-                                <span class="progress-percentage" id="progress-percentage">0%</span>
+                        </div>
+                    </div>
+                    <div class="tab-content" id="detailed-content">
+                        <div class="loading" id="detailed-loading" style="display: none;">
+                            <div class="progress-container">
+                                <div class="progress-bar">
+                                    <div class="progress-fill"></div>
+                                </div>
+                                <div class="progress-message">
+                                    <div class="spinner"></div>
+                                    <span>Loading detailed analysis...</span>
+                                    <span class="progress-percentage">0%</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -842,6 +937,8 @@
 
         let selectedFile = null;
         let conciseAnalysis = null;
+        let detailedAnalysis = null;
+        let activeTab = 'quick';
 
         const progressStages = [
             { progress: 15, message: 'Uploading image...', icon: '📤' },
@@ -853,6 +950,18 @@
         ];
 
         let currentStageIndex = 0;
+
+        function switchTab(tabName) {
+            activeTab = tabName;
+
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabName + '-tab').classList.add('active');
+
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tabName + '-content').classList.add('active');
+        }
 
         uploadArea.addEventListener('click', () => {
             fileInput.click();
@@ -929,8 +1038,12 @@
         async function analyzePhoto(file) {
             analysisArea.style.display = 'block';
 
-            analysisContent.innerHTML = `
-                <div class="loading" id="loading">
+            // Reset both tab contents
+            const quickContent = document.getElementById('quick-content');
+            const detailedContent = document.getElementById('detailed-content');
+
+            quickContent.innerHTML = `
+                <div class="loading" id="quick-loading">
                     <div class="progress-container">
                         <div class="progress-bar">
                             <div class="progress-fill" id="progress-fill"></div>
@@ -944,9 +1057,25 @@
                 </div>
             `;
 
+            detailedContent.innerHTML = `
+                <div class="loading" id="detailed-loading">
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                        <div class="progress-message">
+                            <div class="spinner"></div>
+                            <span>Loading detailed analysis...</span>
+                            <span class="progress-percentage">0%</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
             // Reset variables for new analysis
             currentStageIndex = 0;
             conciseAnalysis = null;
+            detailedAnalysis = null;
             window.conciseBuffer = '';
 
             setTimeout(() => {
@@ -994,50 +1123,96 @@
                                     // Check if this is a detailed analysis chunk
                                     if (data.content.startsWith('DETAILED ANALYSIS:')) {
                                         // Extract the detailed analysis content
-                                        const detailedContent = data.content.replace('DETAILED ANALYSIS: ', '');
-                                        analysisText = detailedContent; // Set, don't append for detailed analysis
-                                        // Remove loading state after first chunk arrives
-                                        if (document.getElementById('loading')) {
-                                            analysisContent.innerHTML = '';
-                                        }
-                                        // Update content with detailed analysis
-                                        updateAnalysisDisplay(analysisText);
+                                        const detailedText = data.content.replace('DETAILED ANALYSIS: ', '');
+                                        detailedAnalysis = detailedText;
+
+                                        // Remove loading state from detailed tab
+                                        const detailedContent = document.getElementById('detailed-content');
+                                        detailedContent.innerHTML = '';
+
+                                        // Update detailed analysis display
+                                        updateDetailedAnalysisDisplay(detailedText);
                                     } else {
                                         // Check if this chunk contains JSON (concise analysis)
                                         try {
-                                            // Try to parse as JSON to see if it's concise analysis
-                                            if (!window.conciseBuffer) window.conciseBuffer = '';
-                                            window.conciseBuffer += data.content;
+                                            // Check if data.content looks like JSON or contains JSON markers
+                                            const content = data.content.trim();
 
-                                            // Try to parse the accumulated buffer as JSON
-                                            const possibleJson = window.conciseBuffer.trim();
-                                            if (possibleJson.startsWith('{') && possibleJson.endsWith('}')) {
-                                                try {
-                                                    conciseAnalysis = JSON.parse(possibleJson);
-                                                    // Successfully parsed, update display
-                                                    updateConciseAnalysis();
-                                                    // Clear buffer
-                                                    window.conciseBuffer = '';
-                                                } catch (parseError) {
-                                                    // Not valid JSON yet, continue accumulating
+                                            // Initialize buffer if not exists
+                                            if (!window.conciseBuffer) window.conciseBuffer = '';
+
+                                            // Always accumulate content for potential JSON parsing
+                                            window.conciseBuffer += content;
+
+                                            // Check if this chunk might be JSON related
+                                            const hasJsonMarker = window.conciseBuffer.includes('```json') ||
+                                                                window.conciseBuffer.includes('{') ||
+                                                                window.conciseBuffer.includes('"overall_impression"') ||
+                                                                window.conciseBuffer.includes('"concise_bullet_points"');
+
+                                            if (hasJsonMarker) {
+                                                console.log('Accumulating potential JSON buffer:', window.conciseBuffer);
+
+                                                // Try to extract and parse JSON
+                                                let jsonContent = '';
+
+                                                // Check for JSON in markdown blocks
+                                                if (window.conciseBuffer.includes('```json') && window.conciseBuffer.includes('```', window.conciseBuffer.indexOf('```json') + 7)) {
+                                                    const jsonStart = window.conciseBuffer.indexOf('```json') + 7;
+                                                    const jsonEnd = window.conciseBuffer.indexOf('```', jsonStart);
+                                                    jsonContent = window.conciseBuffer.substring(jsonStart, jsonEnd).trim();
+                                                }
+                                                // Check for raw JSON (fallback)
+                                                else if (window.conciseBuffer.includes('{') && window.conciseBuffer.includes('}')) {
+                                                    const jsonStart = window.conciseBuffer.indexOf('{');
+                                                    const jsonEnd = window.conciseBuffer.lastIndexOf('}') + 1;
+                                                    if (jsonEnd > jsonStart) {
+                                                        jsonContent = window.conciseBuffer.substring(jsonStart, jsonEnd).trim();
+                                                    }
+                                                }
+
+                                                // Try to parse if we have potential JSON content
+                                                if (jsonContent && jsonContent.includes('"overall_impression"')) {
+                                                    try {
+                                                        conciseAnalysis = JSON.parse(jsonContent);
+                                                        console.log('Successfully parsed JSON:', conciseAnalysis);
+
+                                                        // Update display
+                                                        updateQuickAnalysisDisplay();
+
+                                                        // Clear buffer since we successfully parsed
+                                                        window.conciseBuffer = '';
+                                                    } catch (parseError) {
+                                                        console.log('JSON parse error:', parseError);
+                                                        console.log('Attempted to parse:', jsonContent);
+                                                        // Continue accumulating - might need more chunks
+                                                    }
                                                 }
                                             }
-                                        } catch (e) {
-                                            // If it's not JSON, treat as regular content
-                                            analysisText += data.content;
-                                            // Remove loading state after first chunk arrives
-                                            if (document.getElementById('loading')) {
-                                                analysisContent.innerHTML = '';
+
+                                            // If this doesn't look like JSON content, treat as detailed analysis
+                                            if (!hasJsonMarker && !content.includes('```')) {
+                                                if (detailedAnalysis) {
+                                                    detailedAnalysis += content;
+                                                } else {
+                                                    detailedAnalysis = content;
+                                                }
+                                                updateDetailedAnalysisDisplay(detailedAnalysis);
                                             }
-                                            // Update content with streaming data
-                                            updateAnalysisDisplay(analysisText);
+                                        } catch (e) {
+                                            console.error('Error processing chunk:', e);
+                                            // If it's not JSON, treat as regular content - likely continuation of detailed analysis
+                                            if (detailedAnalysis) {
+                                                detailedAnalysis += data.content;
+                                                updateDetailedAnalysisDisplay(detailedAnalysis);
+                                            }
                                         }
                                     }
                                 } else if (data.type === 'error') {
                                     showError('Analysis error: ' + data.content);
                                     return;
                                 } else if (data.type === 'done') {
-                                    updateAnalysisDisplay(analysisText);
+                                    // Analysis complete
                                     return;
                                 }
                             } catch (e) {
@@ -1055,31 +1230,17 @@
             }
         }
 
-        function updateAnalysisDisplay(analysisText) {
-            const enhancedContent = enhanceAnalysisContent(marked.parse(analysisText));
-
-            // Create the full content with both concise and detailed analysis
-            let fullContent = '';
-
-            // Add concise analysis if available
+        function updateQuickAnalysisDisplay() {
+            const quickContent = document.getElementById('quick-content');
             if (conciseAnalysis) {
-                fullContent += renderConciseAnalysis(conciseAnalysis);
+                quickContent.innerHTML = renderConciseAnalysis(conciseAnalysis);
             }
-
-            // Add detailed analysis
-            fullContent += enhancedContent;
-
-            analysisContent.innerHTML = fullContent;
         }
 
-        function updateConciseAnalysis() {
-            // If we have analysis text, update the full display
-            const currentContent = analysisContent.innerHTML;
-            if (currentContent && !document.getElementById('loading')) {
-                // Find the detailed analysis part and update with concise included
-                const detailedContent = currentContent.replace(/<div class="concise-analysis">.*?<\/div>/s, '');
-                analysisContent.innerHTML = renderConciseAnalysis(conciseAnalysis) + detailedContent;
-            }
+        function updateDetailedAnalysisDisplay(analysisText) {
+            const detailedContent = document.getElementById('detailed-content');
+            const enhancedContent = enhanceAnalysisContent(marked.parse(analysisText));
+            detailedContent.innerHTML = enhancedContent;
         }
 
         function renderConciseAnalysis(conciseData) {
@@ -1368,15 +1529,15 @@
 
         async function copyText() {
             const copyTextBtn = document.getElementById('copy-text-btn');
-            const analysisContent = document.getElementById('analysis-content');
+            const activeTabContent = document.querySelector('.tab-content.active');
 
-            if (!analysisContent.textContent.trim() || document.getElementById('loading')) {
+            if (!activeTabContent || !activeTabContent.textContent.trim() || activeTabContent.querySelector('.loading')) {
                 showError('No analysis to copy. Please analyze a photo first.');
                 return;
             }
 
             try {
-                const analysisText = analysisContent.innerText;
+                const analysisText = activeTabContent.innerText;
                 await navigator.clipboard.writeText(analysisText);
                 showCopySuccess(copyTextBtn, 'Text copied!');
             } catch (error) {
