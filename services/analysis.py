@@ -1,9 +1,11 @@
 from typing import Dict, Any, Union
-from services.llm import gemini_llm_call_stream, gemini_llm_call
+from services.llm import gemini_llm_call_stream, gemini_llm_call, generate_image
 from prompts import (
     ANALYSE_SYSTEM_PROMPT,
     ANALYSE_USER_PROMPT,
     ANALYSE_JSON_SYSTEM_PROMPT,
+    IMAGE_GEN_SYSTEM_PROMPT,
+    IMAGE_GEN_USER_PROMPT,
 )
 
 
@@ -100,3 +102,9 @@ class PhotoAnalyzer:
                 yield chunk
         except Exception as e:
             yield f"Error analyzing photo: {e}"
+
+    async def get_edited_photgraph(self, analysis: dict):
+        # Split cached analysis to separate detailed and JSON parts
+        full_analysis = analysis["analysis_text"]
+        user_prompt = IMAGE_GEN_USER_PROMPT.format(analysis=full_analysis)
+        generate_image(system_prompt=IMAGE_GEN_SYSTEM_PROMPT, user_prompt=user_prompt)

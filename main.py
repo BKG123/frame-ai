@@ -69,18 +69,24 @@ async def root():
         }
 
 
+def get_hash_from_ip_filename(ip: str, file_name: str):
+    # create hash using filename and client_ip
+    file_hash = db.get_file_hash(file_name)
+    file_hash = file_hash + ip
+    return file_hash
+
+
 @app.post("/upload")
 async def upload_and_analyze(request: Request, file: UploadFile = File(...)):
-    """Upload a photo and get streaming analysis"""
+    # Get client IP address
+    client_ip = request.client.host if request.client else "unknown"
+    """Upload a photo and get hash"""
     if not file.content_type or not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="File must be an image")
 
     # Get client IP address
     client_ip = request.client.host if request.client else "unknown"
-
-    # Read file content and create hash
-    content = await file.read()
-    file_hash = db.get_content_hash(content)
+    file_hash = get_hash_from_ip_filename(client_ip, file.filename)
 
     # Check if this file has been analyzed before
     try:
@@ -89,12 +95,15 @@ async def upload_and_analyze(request: Request, file: UploadFile = File(...)):
         logger.error(f"Failed to check cache: {e}")
         cached_analysis = None
 
+    file_content = await file.read()
     # Create temporary file
     with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as temp_file:
-        temp_file.write(content)
+        temp_file.write(file_content)
         temp_file_path = temp_file.name
 
     async def generate_analysis():
+        yield f"file_hash: {json.dumps({'file_hash': file_hash})}"
+
         if cached_analysis:
             # Return cached analysis
             try:
@@ -156,7 +165,6 @@ async def upload_and_analyze(request: Request, file: UploadFile = File(...)):
                     exif_context = analyzer.get_exif_context_from_file(temp_file_path)
 
                     db.store_analysis(
-                        ip_address=client_ip,
                         filename=file.filename or "unknown",
                         file_hash=file_hash,
                         analysis_text=full_analysis,
@@ -179,62 +187,19 @@ async def upload_and_analyze(request: Request, file: UploadFile = File(...)):
     )
 
 
-@app.get("/analysis/history")
-async def get_analysis_history(request: Request, limit: int = 50):
-    """Get analysis history for the requesting IP address"""
-    client_ip = request.client.host if request.client else "unknown"
-
+@app.post("/image/generate")
+async def generate_edited_image(request: Request, file_hash: str):
+    cached_analysis = None
+    # Check if this file has been analyzed before
     try:
-        analyses = db.get_analysis_by_ip(client_ip, limit)
-        return {"status": "success", "count": len(analyses), "analyses": analyses}
+        cached_analysis = db.get_analysis_by_hash(file_hash)
     except Exception as e:
-        logger.error(f"Failed to retrieve analysis history: {e}")
+        logger.error(f"Failed to check cache: {e}")
+
+    if not cached_analysis:
         raise HTTPException(
-            status_code=500, detail="Failed to retrieve analysis history"
+            status_code=404, detail="Couldn't find analysis for the file"
         )
-
-
-@app.get("/analysis/{analysis_id}")
-async def get_analysis(request: Request, analysis_id: int):
-    """Get a specific analysis by ID (only if it belongs to the requesting IP)"""
-    client_ip = request.client.host if request.client else "unknown"
-
-    try:
-        # First get all analyses for this IP to check ownership
-        analyses = db.get_analysis_by_ip(client_ip, 1000)  # Large limit to check all
-        analysis = next((a for a in analyses if a["id"] == analysis_id), None)
-
-        if not analysis:
-            raise HTTPException(
-                status_code=404, detail="Analysis not found or access denied"
-            )
-
-        return {"status": "success", "analysis": analysis}
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Failed to retrieve analysis: {e}")
-        raise HTTPException(status_code=500, detail="Failed to retrieve analysis")
-
-
-@app.delete("/analysis/{analysis_id}")
-async def delete_analysis(request: Request, analysis_id: int):
-    """Delete a specific analysis by ID (only if it belongs to the requesting IP)"""
-    client_ip = request.client.host if request.client else "unknown"
-
-    try:
-        success = db.delete_analysis(analysis_id, client_ip)
-        if not success:
-            raise HTTPException(
-                status_code=404, detail="Analysis not found or access denied"
-            )
-
-        return {"status": "success", "message": "Analysis deleted successfully"}
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Failed to delete analysis: {e}")
-        raise HTTPException(status_code=500, detail="Failed to delete analysis")
 
 
 @app.get("/health")
