@@ -20,6 +20,7 @@ class AnalysisDatabase:
                     file_hash TEXT NOT NULL,
                     analysis_text TEXT NOT NULL,
                     exif_data TEXT,
+                    image_path TEXT,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     UNIQUE(ip_address, file_hash)
                 )
@@ -43,6 +44,14 @@ class AnalysisDatabase:
                 hash_md5.update(chunk)
         return hash_md5.hexdigest()
 
+    def get_filename_hash(self, file_path: str) -> str:
+        """Generate a hash for the file content"""
+        hash_md5 = hashlib.md5()
+        with open(file_path, "rb") as f:
+            for chunk in iter(lambda: f.read(4096), b""):
+                hash_md5.update(chunk)
+        return hash_md5.hexdigest()
+
     def get_content_hash(self, content: bytes) -> str:
         """Generate a hash for the file content from bytes"""
         return hashlib.md5(content).hexdigest()
@@ -54,6 +63,7 @@ class AnalysisDatabase:
         file_hash: str,
         analysis_text: str,
         exif_data: Optional[Dict[str, Any]] = None,
+        image_path: Optional[str] = None,
     ) -> int | None:
         """Store analysis result in the database"""
         exif_json = json.dumps(exif_data) if exif_data else None
@@ -62,10 +72,10 @@ class AnalysisDatabase:
             cursor = conn.execute(
                 """
                 INSERT OR REPLACE INTO analysis_results
-                (ip_address, filename, file_hash, analysis_text, exif_data)
-                VALUES (?, ?, ?, ?, ?)
+                (ip_address, filename, file_hash, analysis_text, exif_data, image_path)
+                VALUES (?, ?, ?, ?, ?, ?)
             """,
-                (ip_address, filename, file_hash, analysis_text, exif_json),
+                (ip_address, filename, file_hash, analysis_text, exif_json, image_path),
             )
             conn.commit()
             return cursor.lastrowid
@@ -101,7 +111,7 @@ class AnalysisDatabase:
             conn.row_factory = sqlite3.Row
             cursor = conn.execute(
                 """
-                SELECT id, ip_address, filename, analysis_text, exif_data, created_at
+                SELECT id, ip_address, filename, analysis_text, exif_data, image_path, created_at
                 FROM analysis_results
                 WHERE file_hash = ?
                 ORDER BY created_at DESC

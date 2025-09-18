@@ -2,7 +2,7 @@ from google import genai
 
 import os
 from mimetypes import guess_type
-import mimetypes
+from typing import Any
 
 from google.genai import types
 import requests
@@ -233,51 +233,80 @@ def save_binary_file(file_name, data):
     print(f"File saved to to: {file_name}")
 
 
-def generate_image(system_prompt: str, user_prompt: str):
-    client = genai.Client(
-        api_key=os.environ.get("GEMINI_API_KEY"),
-    )
+def generate_image(
+    system_prompt: str,
+    user_prompt: str,
+    input_image_path: str | None = None,
+    output_file_path: str = "generated_image.png",
+):
+    """
+    Generate or edit an image using Gemini 2.5 Flash Image (Nano Banana)
 
-    model = "gemini-2.5-flash-image-preview"
-    contents = [
-        types.Content(
-            role="user",
-            parts=[
-                types.Part.from_text(text=user_prompt),
-            ],
-        ),
-    ]
-    generate_content_config = types.GenerateContentConfig(
-        response_modalities=[
-            "IMAGE",
-            "TEXT",
-        ],
-        system_instruction=[
-            types.Part.from_text(text=system_prompt),
-        ],
-    )
+    Args:
+        system_prompt: System instruction for the model
+        user_prompt: User prompt describing the image generation/editing task
+        input_image_path: Optional path to input image for editing
+        output_file_path: Path where the generated image will be saved
 
-    file_index = 0
-    for chunk in client.models.generate_content_stream(
-        model=model,
-        contents=contents,
-        config=generate_content_config,
-    ):
+    Returns:
+        dict: Contains 'text' response and 'image_path' if successful
+    """
+    try:
+        client = genai.Client(
+            api_key=os.environ.get("GEMINI_API_KEY"),
+        )
+
+        # Prepare contents list
+        contents: list[Any] = [user_prompt]
+
+        # Add input image if provided (for image editing)
+        if input_image_path:
+            try:
+                from PIL import Image
+
+                input_image = Image.open(input_image_path)
+                contents.append(input_image)
+            except Exception as e:
+                logger.error(f"Error loading input image {input_image_path}: {e}")
+                raise
+
+        # Configure generation with system instruction
+        config = types.GenerateContentConfig(
+            response_modalities=["IMAGE", "TEXT"],
+            system_instruction=system_prompt,
+        )
+
+        # Generate content
+        response = client.models.generate_content(
+            model="gemini-2.5-flash-image-preview",
+            contents=contents,
+            config=config,
+        )
+
+        result: dict[str, str | None] = {"text": None, "image_path": None}
+
+        # Process response parts
         if (
-            chunk.candidates is None
-            or chunk.candidates[0].content is None
-            or chunk.candidates[0].content.parts is None
+            response.candidates
+            and response.candidates[0].content
+            and response.candidates[0].content.parts
         ):
-            continue
-        if (
-            chunk.candidates[0].content.parts[0].inline_data
-            and chunk.candidates[0].content.parts[0].inline_data.data
-        ):
-            file_name = f"ENTER_FILE_NAME_{file_index}"
-            file_index += 1
-            inline_data = chunk.candidates[0].content.parts[0].inline_data
-            data_buffer = inline_data.data
-            file_extension = mimetypes.guess_extension(inline_data.mime_type)
-            save_binary_file(f"{file_name}{file_extension}", data_buffer)
-        else:
-            print(chunk.text)
+            for part in response.candidates[0].content.parts:
+                if part.text is not None:
+                    result["text"] = part.text
+                    logger.info(f"Generated text: {part.text}")
+                elif part.inline_data is not None and part.inline_data.data is not None:
+                    from PIL import Image
+                    from io import BytesIO
+
+                    # Save the generated image
+                    image = Image.open(BytesIO(part.inline_data.data))
+                    image.save(output_file_path)
+                    result["image_path"] = output_file_path
+                    logger.info(f"Generated image saved to: {output_file_path}")
+
+        return result
+
+    except Exception as e:
+        logger.error(f"Error in generate_image: {e}")
+        raise
