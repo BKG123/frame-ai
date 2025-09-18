@@ -128,13 +128,14 @@ async def upload_and_analyze(request: Request, file: UploadFile = File(...)):
         temp_file_path = temp_file.name
 
     async def generate_analysis():
-        yield f"file_hash: {json.dumps({'file_hash': file_hash})}"
-        yield f"file_name: {json.dumps({'file_name': temp_file_path})}"
+        yield f"file_hash: {json.dumps({'file_hash': file_hash})}\n\n"
+        yield f"file_name: {json.dumps({'file_name': temp_file_path})}\n\n"
 
         if cached_analysis:
             # Return cached analysis
             try:
                 yield f"data: {json.dumps({'type': 'cache_hit', 'content': 'Found previous analysis for this image'})}\n\n"
+                yield f"data: {json.dumps({'type': 'analyzing', 'content': 'Loading cached analysis...'})}\n\n"
 
                 # Split cached analysis to separate detailed and JSON parts
                 full_analysis = cached_analysis["analysis_text"]

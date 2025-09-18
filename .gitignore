@@ -11,3 +11,7 @@ wheels/
 .venv
 *.db
 .env
+
+# Directories
+/static/generated_images
+/static/uploaded_images

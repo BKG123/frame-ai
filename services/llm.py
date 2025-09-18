@@ -291,7 +291,13 @@ def generate_image(
             and response.candidates[0].content
             and response.candidates[0].content.parts
         ):
-            for part in response.candidates[0].content.parts:
+            logger.info(
+                f"Processing {len(response.candidates[0].content.parts)} response parts"
+            )
+            for i, part in enumerate(response.candidates[0].content.parts):
+                logger.info(
+                    f"Part {i}: text={part.text is not None}, inline_data={part.inline_data is not None}"
+                )
                 if part.text is not None:
                     result["text"] = part.text
                     logger.info(f"Generated text: {part.text}")
@@ -304,6 +310,8 @@ def generate_image(
                     image.save(output_file_path)
                     result["image_path"] = output_file_path
                     logger.info(f"Generated image saved to: {output_file_path}")
+                else:
+                    logger.warning(f"Part {i} has neither text nor inline_data")
 
         return result
 
