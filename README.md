@@ -2,7 +2,7 @@
 
 **Frame AI** is an AI-powered photography analysis and coaching tool that provides professional, real-time feedback on your photos. Designed with photographers—amateurs and pros alike—in mind, it delivers actionable insights through a sleek, modern web interface.
 
-🌐 **Live Demo:** [https://frame-ai.onrender.com](https://frame-ai.onrender.com)
+🌐 **Live Demo:** [https://frame-ai.bejayketanguin.com](https://frame-ai.bejayketanguin.com)
 
 ---
 
