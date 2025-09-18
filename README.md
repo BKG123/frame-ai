@@ -9,7 +9,8 @@
 ## ✨ Features
 
 * 📸 **AI-Powered Photo Critique** – Get expert feedback on composition, lighting, and framing powered by [Gemini ](https://aistudio.google.com/welcome).
-* 🔄 **Real-Time Streaming Analysis** – Watch the AI’s thought process unfold as it analyzes your photo.
+* 🎨 **AI Image Enhancement** – Generate improved versions of your photos based on the analysis feedback.
+* 🔄 **Real-Time Streaming Analysis** – Watch the AI's thought process unfold as it analyzes your photo.
 * 📷 **EXIF Data Insights** – Understand how your camera settings impact the shot.
 * 📋 **Structured Feedback** – Organized sections for strengths, improvements, and tips with expandable analysis cards.
 * 🌐 **Responsive Interface** – Works on desktop and mobile with drag-and-drop uploads.
@@ -84,6 +85,11 @@ Access it at:
 ### 📸 Photo Analysis
 
 * `POST /upload` – Upload your photo and receive real-time analysis.
+
+### 🎨 Image Enhancement
+
+* `POST /image/edit` – Generate an enhanced version of your photo based on analysis feedback.
+* `POST /image/generate` – Create or edit images using custom prompts with AI.
 
 ### ✅ Utility
 
