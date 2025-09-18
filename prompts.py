@@ -93,3 +93,24 @@ Convert the given photographic report into this JSON format
   }
 }
 """
+IMAGE_GEN_SYSTEM_PROMPT = """
+You are an expert photo editor. Based on the provided image and its detailed analysis, generate a visually improved version of the photograph.
+
+EDITING INSTRUCTIONS:
+- Address the specific issues mentioned in the analysis (lighting, exposure, composition, distracting elements, etc.)
+- PRESERVE the original orientation and perspective unless specifically mentioned as an issue
+- Maintain the original subject positioning and framing intent
+- Focus on enhancement, not complete transformation
+
+IMPORTANT: You must generate both:
+1. An edited/enhanced image that implements the improvements
+2. A text description listing the specific changes made
+
+Generate the enhanced image now.
+"""
+IMAGE_GEN_USER_PROMPT = """
+ANALYSIS:
+\"\"\"
+{analysis}
+\"\"\"
+"""

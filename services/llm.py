@@ -2,11 +2,12 @@ from google import genai
 
 import os
 from mimetypes import guess_type
+from typing import Any
 
+from google.genai import types
 import requests
 from dotenv import load_dotenv
 from config.logger import get_logger
-from google.genai import types
 
 
 load_dotenv(override=True)
@@ -223,3 +224,97 @@ async def gemini_llm_call_stream(
     except Exception as e:
         logger.error(f"Error in Gemini LLM streaming call: {e}")
         yield f"Error: {str(e)}"
+
+
+def save_binary_file(file_name, data):
+    f = open(file_name, "wb")
+    f.write(data)
+    f.close()
+    print(f"File saved to to: {file_name}")
+
+
+def generate_image(
+    system_prompt: str,
+    user_prompt: str,
+    input_image_path: str | None = None,
+    output_file_path: str = "generated_image.png",
+):
+    """
+    Generate or edit an image using Gemini 2.5 Flash Image (Nano Banana)
+
+    Args:
+        system_prompt: System instruction for the model
+        user_prompt: User prompt describing the image generation/editing task
+        input_image_path: Optional path to input image for editing
+        output_file_path: Path where the generated image will be saved
+
+    Returns:
+        dict: Contains 'text' response and 'image_path' if successful
+    """
+    try:
+        client = genai.Client(
+            api_key=os.environ.get("GEMINI_API_KEY"),
+        )
+
+        # Prepare contents list
+        contents: list[Any] = [user_prompt]
+
+        # Add input image if provided (for image editing)
+        if input_image_path:
+            try:
+                from PIL import Image
+
+                input_image = Image.open(input_image_path)
+                contents.append(input_image)
+            except Exception as e:
+                logger.error(f"Error loading input image {input_image_path}: {e}")
+                raise
+
+        # Configure generation with system instruction
+        config = types.GenerateContentConfig(
+            response_modalities=["IMAGE", "TEXT"],
+            system_instruction=system_prompt,
+        )
+
+        # Generate content
+        response = client.models.generate_content(
+            model="gemini-2.5-flash-image-preview",
+            contents=contents,
+            config=config,
+        )
+
+        result: dict[str, str | None] = {"text": None, "image_path": None}
+
+        # Process response parts
+        if (
+            response.candidates
+            and response.candidates[0].content
+            and response.candidates[0].content.parts
+        ):
+            logger.info(
+                f"Processing {len(response.candidates[0].content.parts)} response parts"
+            )
+            for i, part in enumerate(response.candidates[0].content.parts):
+                logger.info(
+                    f"Part {i}: text={part.text is not None}, inline_data={part.inline_data is not None}"
+                )
+                if part.text is not None:
+                    result["text"] = part.text
+                    logger.info(f"Generated text: {part.text}")
+                elif part.inline_data is not None and part.inline_data.data is not None:
+                    from PIL import Image
+                    from io import BytesIO
+
+                    # Save the generated image
+                    image = Image.open(BytesIO(part.inline_data.data))
+                    image.save(output_file_path)
+                    result["image_path"] = output_file_path
+                    logger.info(f"Generated image saved to: {output_file_path}")
+                else:
+                    logger.warning(f"Part {i} has neither text nor inline_data")
+
+        return result
+
+    except Exception as e:
+        logger.error(f"Error in generate_image: {e}")
+        raise

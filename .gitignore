@@ -6,7 +6,12 @@ dist/
 wheels/
 *.egg-info
 
+
 # Virtual environments
 .venv
-
+*.db
 .env
+
+# Directories
+/static/generated_images
+/static/uploaded_images
