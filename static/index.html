@@ -1002,9 +1002,196 @@
             color: #34d399;
         }
 
+        body.dark #enhancement-changes {
+            background: #1e293b;
+            border-color: #0ea5e9;
+        }
+
+        body.dark #enhancement-changes h3 {
+            color: #38bdf8;
+        }
+
+        body.dark #enhancement-changes-content {
+            color: #cbd5e1;
+        }
+
+        #enhancement-changes {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .enhancement-header-collapsible {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .enhancement-header-collapsible:hover {
+            background: #f8fafc;
+        }
+
+        .enhancement-header-collapsible span {
+            font-size: 1.25rem;
+        }
+
+        .enhancement-header-collapsible h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .enhancement-header-collapsible .collapse-toggle {
+            transition: transform 0.2s ease;
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .enhancement-header-collapsible.expanded .collapse-toggle {
+            transform: rotate(180deg);
+        }
+
+        .enhancement-grid {
+            display: grid;
+            gap: 0.75rem;
+            padding: 1.5rem;
+            max-height: 500px;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+            background: #f8fafc;
+        }
+
+        .enhancement-grid.collapsed {
+            max-height: 0;
+            padding: 0 1.5rem;
+            overflow: hidden;
+        }
+
+        .enhancement-item {
+            background: white;
+            border-radius: 8px;
+            padding: 1rem;
+            border-left: 4px solid #6366f1;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease;
+        }
+
+        .enhancement-item:hover {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transform: translateX(2px);
+        }
+
+        .enhancement-item-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .enhancement-icon {
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .enhancement-title {
+            font-weight: 600;
+            color: #4338ca;
+            font-size: 0.9rem;
+        }
+
+        .enhancement-description {
+            color: #475569;
+            line-height: 1.6;
+            font-size: 0.875rem;
+            margin-left: 2rem;
+        }
+
+        body.dark #enhancement-changes {
+            background: #1e293b;
+            border-color: #334155;
+        }
+
+        body.dark .enhancement-header-collapsible {
+            background: #1e293b;
+            border-bottom-color: #334155;
+        }
+
+        body.dark .enhancement-header-collapsible:hover {
+            background: #334155;
+        }
+
+        body.dark .enhancement-header-collapsible h3 {
+            color: #cbd5e1;
+        }
+
+        body.dark .enhancement-grid {
+            background: #1e293b;
+        }
+
+        body.dark .enhancement-item {
+            background: #334155;
+            border-left-color: #6366f1;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        body.dark .enhancement-item:hover {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+        }
+
+        body.dark .enhancement-title {
+            color: #818cf8;
+        }
+
+        body.dark .enhancement-description {
+            color: #cbd5e1;
+        }
+
+        /* Scrollbar styling for enhancement grid */
+        .enhancement-grid::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .enhancement-grid::-webkit-scrollbar-track {
+            background: #e2e8f0;
+            border-radius: 4px;
+        }
+
+        .enhancement-grid::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .enhancement-grid::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        body.dark .enhancement-grid::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+
+        body.dark .enhancement-grid::-webkit-scrollbar-thumb {
+            background: #475569;
+        }
+
+        body.dark .enhancement-grid::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+
         @media (max-width: 768px) {
             .image-comparison-container {
                 grid-template-columns: 1fr;
+            }
+
+            .enhancement-description {
+                margin-left: 0;
+                margin-top: 0.5rem;
             }
         }
 
@@ -1265,6 +1452,18 @@
                         </svg>
                         Copy Enhanced
                     </button>
+                </div>
+
+                <!-- AI Enhancement Changes Section - Collapsible -->
+                <div id="enhancement-changes" style="display: none; margin-top: 1.5rem;">
+                    <div class="enhancement-header-collapsible" onclick="toggleEnhancementDetails()">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span>🎨</span>
+                            <h3 style="margin: 0;">AI Enhancement Details</h3>
+                        </div>
+                        <div class="collapse-toggle" id="enhancement-toggle">▼</div>
+                    </div>
+                    <div id="enhancement-changes-content" class="enhancement-grid collapsed"></div>
                 </div>
             </div>
         </div>
@@ -2003,8 +2202,15 @@
                     // Show success message
                     showSuccess('Image enhanced successfully!');
 
+                    // Display the changes made by AI if available
                     if (result.text_response) {
                         console.log('AI enhancements made:', result.text_response);
+                        const changesDiv = document.getElementById('enhancement-changes');
+                        const changesContent = document.getElementById('enhancement-changes-content');
+
+                        // Parse and format the enhancements
+                        changesContent.innerHTML = parseEnhancements(result.text_response);
+                        changesDiv.style.display = 'block';
                     }
 
                     // Hide the modal
@@ -2088,6 +2294,138 @@
                 console.error('Image copy failed:', error);
                 showError('Failed to copy image. Please try again.');
             }
+        }
+
+        // Parse enhancement text into structured cards
+        function parseEnhancements(text) {
+            // Map of enhancement types to icons
+            const enhancementIcons = {
+                'cropping': '✂️',
+                'crop': '✂️',
+                'color': '🎨',
+                'saturation': '🌈',
+                'exposure': '☀️',
+                'contrast': '◐',
+                'shadow': '🌓',
+                'highlight': '💡',
+                'sharpness': '🔍',
+                'sharp': '🔍',
+                'clarity': '✨',
+                'distract': '🎯',
+                'element': '🎯',
+                'noise': '🔇',
+                'blur': '🌫️',
+                'vignette': '⭕',
+                'temperature': '🌡️',
+                'tint': '🎨',
+                'vibrance': '💫',
+                'default': '🔧'
+            };
+
+            // Function to get icon based on text content
+            function getIcon(text) {
+                const lowerText = text.toLowerCase();
+                for (const [key, icon] of Object.entries(enhancementIcons)) {
+                    if (lowerText.includes(key)) {
+                        return icon;
+                    }
+                }
+                return enhancementIcons.default;
+            }
+
+            // Try to parse numbered list format
+            const numberedPattern = /\d+\.\s+\*\*([^*]+)\*\*\s*([^]+?)(?=\d+\.\s+\*\*|$)/g;
+            let matches = [...text.matchAll(numberedPattern)];
+
+            if (matches.length > 0) {
+                return matches.map(match => {
+                    const title = match[1].replace(/:/g, '').trim();
+                    const description = match[2].trim();
+                    const icon = getIcon(title);
+
+                    return `
+                        <div class="enhancement-item">
+                            <div class="enhancement-item-header">
+                                <span class="enhancement-icon">${icon}</span>
+                                <span class="enhancement-title">${title}</span>
+                            </div>
+                            <div class="enhancement-description">${description}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Try to parse bullet points
+            const bulletPattern = /[-•]\s+\*\*([^*]+)\*\*\s*([^\n]+)/g;
+            matches = [...text.matchAll(bulletPattern)];
+
+            if (matches.length > 0) {
+                return matches.map(match => {
+                    const title = match[1].replace(/:/g, '').trim();
+                    const description = match[2].trim();
+                    const icon = getIcon(title);
+
+                    return `
+                        <div class="enhancement-item">
+                            <div class="enhancement-item-header">
+                                <span class="enhancement-icon">${icon}</span>
+                                <span class="enhancement-title">${title}</span>
+                            </div>
+                            <div class="enhancement-description">${description}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Fallback: split by double newlines or periods
+            const paragraphs = text.split(/\n\n|\.\s+(?=[A-Z])/).filter(p => p.trim());
+
+            if (paragraphs.length > 1) {
+                return paragraphs.map(para => {
+                    // Try to extract a title from the paragraph
+                    const titleMatch = para.match(/^\*\*([^*]+)\*\*/);
+                    let title = 'Enhancement';
+                    let description = para;
+
+                    if (titleMatch) {
+                        title = titleMatch[1].replace(/:/g, '').trim();
+                        description = para.replace(titleMatch[0], '').trim();
+                    }
+
+                    const icon = getIcon(para);
+
+                    return `
+                        <div class="enhancement-item">
+                            <div class="enhancement-item-header">
+                                <span class="enhancement-icon">${icon}</span>
+                                <span class="enhancement-title">${title}</span>
+                            </div>
+                            <div class="enhancement-description">${description}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Ultimate fallback: display as single item
+            return `
+                <div class="enhancement-item">
+                    <div class="enhancement-item-header">
+                        <span class="enhancement-icon">🎨</span>
+                        <span class="enhancement-title">AI Enhancements</span>
+                    </div>
+                    <div class="enhancement-description">${text}</div>
+                </div>
+            `;
+        }
+
+        // Toggle enhancement details section
+        function toggleEnhancementDetails() {
+            const content = document.getElementById('enhancement-changes-content');
+            const header = document.querySelector('.enhancement-header-collapsible');
+            const toggle = document.getElementById('enhancement-toggle');
+
+            content.classList.toggle('collapsed');
+            header.classList.toggle('expanded');
         }
 
         // Close modal when clicking outside

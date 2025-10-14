@@ -15,3 +15,5 @@ wheels/
 # Directories
 /static/generated_images
 /static/uploaded_images
+
+thoughts.txt

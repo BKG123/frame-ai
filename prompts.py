@@ -103,6 +103,7 @@ EDITING INSTRUCTIONS:
 - Maintain the original subject positioning and framing intent
 - Focus on enhancement, not complete transformation
 - Only enhance: exposure, colors, lighting, sharpness, and remove distracting elements
+- Don't add or remove any object/humans in the image
 
 IMPORTANT: You must generate both:
 1. An edited/enhanced image that implements the improvements IN THE SAME ORIENTATION as the input
