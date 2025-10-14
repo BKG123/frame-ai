@@ -16,4 +16,8 @@ wheels/
 /static/generated_images
 /static/uploaded_images
 
+# Evaluation results (keep test code, ignore generated reports)
+/evals/results/
+/evals/fixtures/
+
 thoughts.txt
