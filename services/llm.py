@@ -262,9 +262,14 @@ def generate_image(
         # Add input image if provided (for image editing)
         if input_image_path:
             try:
-                from PIL import Image
+                from PIL import Image, ImageOps
 
+                # Open and auto-orient the image based on EXIF data
                 input_image = Image.open(input_image_path)
+
+                # Apply EXIF orientation to ensure correct rotation
+                input_image = ImageOps.exif_transpose(input_image)
+
                 contents.append(input_image)
             except Exception as e:
                 logger.error(f"Error loading input image {input_image_path}: {e}")

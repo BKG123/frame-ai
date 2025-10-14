@@ -882,7 +882,80 @@
         .generated-image-area {
             display: none;
             margin-top: 2rem;
+        }
+
+        .comparison-header {
             text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .comparison-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .comparison-subtitle {
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+
+        .image-comparison-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .comparison-image-wrapper {
+            position: relative;
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .comparison-image-wrapper:hover {
+            border-color: #6366f1;
+            box-shadow: 0 8px 16px rgba(99, 102, 241, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .comparison-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #64748b;
+            margin-bottom: 0.75rem;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .comparison-label.original {
+            color: #f59e0b;
+        }
+
+        .comparison-label.enhanced {
+            color: #10b981;
+        }
+
+        .comparison-image {
+            width: 100%;
+            height: auto;
+            max-height: 400px;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
 
         .generated-image {
@@ -898,6 +971,41 @@
             gap: 0.75rem;
             justify-content: center;
             flex-wrap: wrap;
+        }
+
+        body.dark .comparison-header .comparison-title {
+            color: #e2e8f0;
+        }
+
+        body.dark .comparison-subtitle {
+            color: #94a3b8;
+        }
+
+        body.dark .comparison-image-wrapper {
+            background: #334155;
+            border-color: #475569;
+        }
+
+        body.dark .comparison-image-wrapper:hover {
+            border-color: #6366f1;
+        }
+
+        body.dark .comparison-label {
+            color: #94a3b8;
+        }
+
+        body.dark .comparison-label.original {
+            color: #fbbf24;
+        }
+
+        body.dark .comparison-label.enhanced {
+            color: #34d399;
+        }
+
+        @media (max-width: 768px) {
+            .image-comparison-container {
+                grid-template-columns: 1fr;
+            }
         }
 
         /* Dark mode modal styles */
@@ -1113,7 +1221,34 @@
 
             <!-- Generated Image Display Area -->
             <div class="generated-image-area" id="generated-image-area">
-                <img class="generated-image" id="generated-image" alt="Generated Image">
+                <div class="comparison-header">
+                    <div class="comparison-title">
+                        <span>✨</span>
+                        Before & After Comparison
+                    </div>
+                    <div class="comparison-subtitle">
+                        See the improvements made by AI enhancement
+                    </div>
+                </div>
+
+                <div class="image-comparison-container">
+                    <div class="comparison-image-wrapper">
+                        <div class="comparison-label original">
+                            <span>📷</span>
+                            Original Image
+                        </div>
+                        <img class="comparison-image" id="original-comparison-image" alt="Original Image">
+                    </div>
+
+                    <div class="comparison-image-wrapper">
+                        <div class="comparison-label enhanced">
+                            <span>✨</span>
+                            Enhanced Image
+                        </div>
+                        <img class="comparison-image" id="generated-image" alt="Enhanced Image">
+                    </div>
+                </div>
+
                 <div class="image-actions">
                     <button class="action-btn" onclick="downloadGeneratedImage()">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1121,14 +1256,14 @@
                             <polyline points="7,10 12,15 17,10"/>
                             <line x1="12" y1="15" x2="12" y2="3"/>
                         </svg>
-                        Download
+                        Download Enhanced
                     </button>
                     <button class="action-btn" onclick="copyGeneratedImage()">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
                             <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
                         </svg>
-                        Copy Image
+                        Copy Enhanced
                     </button>
                 </div>
             </div>
@@ -1850,11 +1985,19 @@
                 const result = await response.json();
 
                 if (result.success && result.image_path) {
-                    // Show the generated image
+                    // Show both original and enhanced images for comparison
                     const generatedImage = document.getElementById('generated-image');
+                    const originalComparisonImage = document.getElementById('original-comparison-image');
                     const generatedImageArea = document.getElementById('generated-image-area');
+                    const previewImage = document.getElementById('preview-image');
 
+                    // Set the enhanced image
                     generatedImage.src = result.image_path;
+
+                    // Set the original image for comparison
+                    originalComparisonImage.src = previewImage.src;
+
+                    // Show the comparison area
                     generatedImageArea.style.display = 'block';
 
                     // Show success message

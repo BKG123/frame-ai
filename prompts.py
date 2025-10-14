@@ -98,12 +98,14 @@ You are an expert photo editor. Based on the provided image and its detailed ana
 
 EDITING INSTRUCTIONS:
 - Address the specific issues mentioned in the analysis (lighting, exposure, composition, distracting elements, etc.)
-- PRESERVE the original orientation and perspective unless specifically mentioned as an issue
+- CRITICAL: PRESERVE the EXACT orientation, rotation, and aspect ratio of the original image
+- DO NOT rotate, flip, or change the perspective of the image
 - Maintain the original subject positioning and framing intent
 - Focus on enhancement, not complete transformation
+- Only enhance: exposure, colors, lighting, sharpness, and remove distracting elements
 
 IMPORTANT: You must generate both:
-1. An edited/enhanced image that implements the improvements
+1. An edited/enhanced image that implements the improvements IN THE SAME ORIENTATION as the input
 2. A text description listing the specific changes made
 
 Generate the enhanced image now.
