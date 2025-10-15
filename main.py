@@ -9,8 +9,13 @@ import json
 from config.logger import get_logger
 from services.analysis import PhotoAnalyzer
 from services.database import db
-from services.llm import generate_image
-from prompts import IMAGE_GEN_SYSTEM_PROMPT, IMAGE_GEN_USER_PROMPT
+from services.llm import gemini_llm_call, generate_image
+from prompts import (
+    IMAGE_GEN_SYSTEM_PROMPT,
+    IMAGE_GEN_USER_PROMPT,
+    EDIT_INS_GEN_SYSTEM_PROMPT,
+    EDIT_INS_GEN_USER_PROMPT,
+)
 
 logger = get_logger(__name__)
 app = FastAPI(
@@ -253,9 +258,29 @@ async def edit_image(request: ImageEditRequest):
 
         # Use existing prompts with analysis context only
         analysis_context = cached_analysis["analysis_text"]
+        edit_ins_user_prompt = EDIT_INS_GEN_USER_PROMPT.format(
+            analysis=analysis_context
+        )
+
+        # Generate editing instructions with error handling
+        try:
+            editing_instructions = gemini_llm_call(
+                system_prompt=EDIT_INS_GEN_SYSTEM_PROMPT,
+                user_prompt=edit_ins_user_prompt,
+                model_name="gemini-2.5-flash",
+                temperature=0.5,
+            )
+        except Exception as e:
+            logger.error(f"Failed to generate editing instructions: {str(e)}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to generate editing instructions: {str(e)}",
+            )
 
         # Format the user prompt with analysis context only
-        formatted_user_prompt = IMAGE_GEN_USER_PROMPT.format(analysis=analysis_context)
+        formatted_user_prompt = IMAGE_GEN_USER_PROMPT.format(
+            instructions=editing_instructions
+        )
 
         # Call the generate_image function with existing prompts
         result = generate_image(

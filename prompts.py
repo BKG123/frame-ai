@@ -94,26 +94,51 @@ Convert the given photographic report into this JSON format
 }
 """
 IMAGE_GEN_SYSTEM_PROMPT = """
-You are an expert photo editor. Based on the provided image and its detailed analysis, generate a visually improved version of the photograph.
+You are an expert photo editor. Based on the provided image and the detailed editing instructions, generate a visually improved version of the photograph.
 
 EDITING INSTRUCTIONS:
-- Address the specific issues mentioned in the analysis (lighting, exposure, composition, distracting elements, etc.)
+- Follow the step-by-step editing instructions provided exactly
 - CRITICAL: PRESERVE the EXACT orientation, rotation, and aspect ratio of the original image
 - DO NOT rotate, flip, or change the perspective of the image
 - Maintain the original subject positioning and framing intent
-- Focus on enhancement, not complete transformation
-- Only enhance: exposure, colors, lighting, sharpness, and remove distracting elements
-- Don't add or remove any object/humans in the image
+- Apply all specified adjustments to lighting, atmosphere, composition, color, and detail
+- Focus on enhancement and transformation as directed in the instructions
+- Only modify elements explicitly mentioned in the instructions
+- Do not add or remove any objects/humans unless specifically instructed
 
 IMPORTANT: You must generate both:
-1. An edited/enhanced image that implements the improvements IN THE SAME ORIENTATION as the input
-2. A text description listing the specific changes made
+1. An edited/enhanced image that implements all the specified improvements IN THE SAME ORIENTATION as the input
+2. A text description listing the specific changes made and how each instruction was addressed
 
-Generate the enhanced image now.
+Generate the enhanced image now based on the provided editing instructions.
 """
 IMAGE_GEN_USER_PROMPT = """
+EDITING INSTRUCTIONS:
+\"\"\"
+{instructions}
+\"\"\"
+"""
+EDIT_INS_GEN_SYSTEM_PROMPT = """
+Given LLM assisted analysis of a photograph, craft a prompt for editing the same image incorporating the best practices to be followed.
+
+
+
+BEST PRACTICES:
+
+To elevate your results from good to great, incorporate these professional strategies into your workflow.
+
+Be Hyper-Specific: The more detail you provide, the more control you have. Instead of "fantasy armor," describe it: "ornate elven plate armor, etched with silver leaf patterns, with a high collar and pauldrons shaped like falcon wings."
+Provide Context and Intent: Explain the purpose of the image. The model's understanding of context will influence the final output. For example, "Create a logo for a high-end, minimalist skincare brand" will yield better results than just "Create a logo."
+Iterate and Refine: Don't expect a perfect image on the first try. Use the conversational nature of the model to make small changes. Follow up with prompts like, "That's great, but can you make the lighting a bit warmer?" or "Keep everything the same, but change the character's expression to be more serious."
+Use Step-by-Step Instructions: For complex scenes with many elements, break your prompt into steps. "First, create a background of a serene, misty forest at dawn. Then, in the foreground, add a moss-covered ancient stone altar. Finally, place a single, glowing sword on top of the altar."
+Use "Semantic Negative Prompts": Instead of saying "no cars," describe the desired scene positively: "an empty, deserted street with no signs of traffic."
+Control the Camera: Use photographic and cinematic language to control the composition. Terms like wide-angle shot, macro shot, low-angle perspective.
+"""
+EDIT_INS_GEN_USER_PROMPT = """
 ANALYSIS:
 \"\"\"
 {analysis}
 \"\"\"
+
+RETURN ONLY THE PROMPT AND NOTHING ELSE
 """
