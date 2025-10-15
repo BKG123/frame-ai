@@ -100,10 +100,6 @@ EDITING INSTRUCTIONS:
 - Follow the step-by-step editing instructions provided exactly
 - CRITICAL: PRESERVE the EXACT orientation, rotation, and aspect ratio of the original image
 - DO NOT rotate, flip, or change the perspective of the image
-- Maintain the original subject positioning and framing intent
-- Apply all specified adjustments to lighting, atmosphere, composition, color, and detail
-- Focus on enhancement and transformation as directed in the instructions
-- Only modify elements explicitly mentioned in the instructions
 - Do not add or remove any objects/humans unless specifically instructed
 
 IMPORTANT: You must generate both:
