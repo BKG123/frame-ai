@@ -10,6 +10,7 @@ from config.logger import get_logger
 from services.analysis import PhotoAnalyzer
 from services.database import db
 from services.llm import gemini_llm_call, generate_image
+from services.tools import compare_image_metrics
 from prompts import (
     IMAGE_GEN_SYSTEM_PROMPT,
     IMAGE_GEN_USER_PROMPT,
@@ -56,6 +57,7 @@ class ImageEditResponse(BaseModel):
     image_path: Optional[str] = None
     text_response: Optional[str] = None
     error: Optional[str] = None
+    metrics: Optional[Dict] = None
 
 
 class AnalysisHistoryResponse(BaseModel):
@@ -264,12 +266,23 @@ async def edit_image(request: ImageEditRequest):
 
         # Generate editing instructions with error handling
         try:
-            editing_instructions = gemini_llm_call(
+            editing_instructions = await gemini_llm_call(
                 system_prompt=EDIT_INS_GEN_SYSTEM_PROMPT,
                 user_prompt=edit_ins_user_prompt,
                 model_name="gemini-2.5-flash",
                 temperature=0.5,
             )
+
+            # Check if instructions were actually generated
+            if not editing_instructions or not editing_instructions.strip():
+                logger.error("Generated editing instructions are empty")
+                raise HTTPException(
+                    status_code=500,
+                    detail="Failed to generate editing instructions: AI returned empty response",
+                )
+
+        except HTTPException:
+            raise
         except Exception as e:
             logger.error(f"Failed to generate editing instructions: {str(e)}")
             raise HTTPException(
@@ -290,11 +303,28 @@ async def edit_image(request: ImageEditRequest):
             output_file_path=output_path,
         )
 
+        # Calculate before/after comparison metrics only if image was generated
+        metrics = None
+        if result.get("image_path") and os.path.exists(output_path):
+            try:
+                metrics = compare_image_metrics(
+                    original_path=cached_analysis["image_path"], edited_path=output_path
+                )
+                logger.info(f"Metrics calculated successfully: {metrics}")
+            except Exception as e:
+                logger.error(f"Failed to calculate metrics: {e}")
+                # Continue without metrics rather than failing the whole request
+        else:
+            logger.warning(
+                f"Skipping metrics calculation - output image not found at {output_path}"
+            )
+
         return ImageEditResponse(
             success=True,
             image_path=f"/static/generated_images/{output_filename}",
             text_response=result.get("text"),
             error=None,
+            metrics=metrics,
         )
 
     except HTTPException:

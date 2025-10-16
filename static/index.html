@@ -1184,6 +1184,167 @@
             background: #64748b;
         }
 
+        /* Metrics Comparison Styles */
+        #metrics-comparison {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            overflow: hidden;
+        }
+
+        .metrics-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .metric-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1rem;
+            border-left: 4px solid #6366f1;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease;
+        }
+
+        .metric-card:hover {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .metric-card.positive {
+            border-left-color: #10b981;
+        }
+
+        .metric-card.negative {
+            border-left-color: #ef4444;
+        }
+
+        .metric-card.neutral {
+            border-left-color: #94a3b8;
+        }
+
+        .metric-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #64748b;
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
+
+        .metric-icon {
+            font-size: 1.25rem;
+        }
+
+        .metric-values {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .metric-value-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.875rem;
+        }
+
+        .metric-value-label {
+            color: #64748b;
+        }
+
+        .metric-value-number {
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .metric-change {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+            padding: 0.5rem;
+            margin-top: 0.5rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .metric-change.positive {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .metric-change.negative {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .metric-change.neutral {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        .metric-change-arrow {
+            font-size: 1.25rem;
+        }
+
+        body.dark #metrics-comparison {
+            background: #1e293b;
+            border-color: #334155;
+        }
+
+        body.dark .metrics-header {
+            color: #cbd5e1;
+        }
+
+        body.dark .metric-card {
+            background: #334155;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        body.dark .metric-card:hover {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+        }
+
+        body.dark .metric-value-label {
+            color: #94a3b8;
+        }
+
+        body.dark .metric-value-number {
+            color: #e2e8f0;
+        }
+
+        body.dark .metric-change.positive {
+            background: #064e3b;
+            color: #6ee7b7;
+        }
+
+        body.dark .metric-change.negative {
+            background: #7f1d1d;
+            color: #fca5a5;
+        }
+
+        body.dark .metric-change.neutral {
+            background: #475569;
+            color: #cbd5e1;
+        }
+
         @media (max-width: 768px) {
             .image-comparison-container {
                 grid-template-columns: 1fr;
@@ -1192,6 +1353,10 @@
             .enhancement-description {
                 margin-left: 0;
                 margin-top: 0.5rem;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
             }
         }
 
@@ -1452,6 +1617,15 @@
                         </svg>
                         Copy Enhanced
                     </button>
+                </div>
+
+                <!-- Metrics Comparison Section -->
+                <div id="metrics-comparison" style="display: none; margin-top: 1.5rem;">
+                    <div class="metrics-header">
+                        <span>📊</span>
+                        <h3 style="margin: 0;">Before/After Comparison Metrics</h3>
+                    </div>
+                    <div id="metrics-content" class="metrics-grid"></div>
                 </div>
 
                 <!-- AI Enhancement Changes Section - Collapsible -->
@@ -2202,6 +2376,17 @@
                     // Show success message
                     showSuccess('Image enhanced successfully!');
 
+                    // Display metrics comparison if available
+                    if (result.metrics) {
+                        console.log('Metrics calculated:', result.metrics);
+                        const metricsDiv = document.getElementById('metrics-comparison');
+                        const metricsContent = document.getElementById('metrics-content');
+
+                        // Parse and format the metrics
+                        metricsContent.innerHTML = renderMetrics(result.metrics);
+                        metricsDiv.style.display = 'block';
+                    }
+
                     // Display the changes made by AI if available
                     if (result.text_response) {
                         console.log('AI enhancements made:', result.text_response);
@@ -2294,6 +2479,83 @@
                 console.error('Image copy failed:', error);
                 showError('Failed to copy image. Please try again.');
             }
+        }
+
+        // Render metrics comparison cards
+        function renderMetrics(metrics) {
+            if (!metrics || !metrics.original || !metrics.edited || !metrics.changes) {
+                return '<p>Metrics data not available.</p>';
+            }
+
+            const metricsConfig = [
+                {
+                    key: 'brightness',
+                    label: 'Brightness',
+                    icon: '☀️',
+                    description: 'Average luminance (0-255)'
+                },
+                {
+                    key: 'contrast',
+                    label: 'Contrast',
+                    icon: '◐',
+                    description: 'Dynamic range (0-255)'
+                },
+                {
+                    key: 'saturation',
+                    label: 'Saturation',
+                    icon: '🎨',
+                    description: 'Color intensity (0-255)'
+                }
+            ];
+
+            let html = '';
+
+            metricsConfig.forEach(config => {
+                const original = metrics.original[config.key];
+                const edited = metrics.edited[config.key];
+                const change = metrics.changes[config.key];
+                const changePercent = metrics.changes[config.key + '_percent'];
+
+                // Determine card type based on change
+                let cardType = 'neutral';
+                let arrow = '→';
+
+                if (Math.abs(changePercent) < 1) {
+                    cardType = 'neutral';
+                    arrow = '→';
+                } else if (changePercent > 0) {
+                    cardType = 'positive';
+                    arrow = '↑';
+                } else {
+                    cardType = 'negative';
+                    arrow = '↓';
+                }
+
+                html += `
+                    <div class="metric-card ${cardType}">
+                        <div class="metric-label">
+                            <span class="metric-icon">${config.icon}</span>
+                            ${config.label}
+                        </div>
+                        <div class="metric-values">
+                            <div class="metric-value-row">
+                                <span class="metric-value-label">Before:</span>
+                                <span class="metric-value-number">${original.toFixed(1)}</span>
+                            </div>
+                            <div class="metric-value-row">
+                                <span class="metric-value-label">After:</span>
+                                <span class="metric-value-number">${edited.toFixed(1)}</span>
+                            </div>
+                        </div>
+                        <div class="metric-change ${cardType}">
+                            <span class="metric-change-arrow">${arrow}</span>
+                            <span>${changePercent > 0 ? '+' : ''}${changePercent.toFixed(1)}%</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            return html;
         }
 
         // Parse enhancement text into structured cards
