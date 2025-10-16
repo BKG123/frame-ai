@@ -6,6 +6,7 @@ from typing import Optional, Dict
 import os
 import tempfile
 import json
+import hashlib
 from config.logger import get_logger
 from services.analysis import PhotoAnalyzer
 from services.database import db
@@ -71,6 +72,9 @@ class AnalysisHistoryResponse(BaseModel):
 # Initialize analyzer
 analyzer = PhotoAnalyzer()
 
+# Cache statistics (in-memory for demo purposes)
+cache_stats = {"hits": 0, "misses": 0, "uploads": 0}
+
 
 @app.get("/", response_class=HTMLResponse)
 async def root():
@@ -89,24 +93,41 @@ async def root():
         }
 
 
-def get_hash_from_ip_filename(ip: str, file_name: str):
-    # create hash using filename and client_ip
-    file_hash = file_name + "_" + ip
-    return file_hash
+def get_content_hash(file_content: bytes) -> str:
+    """
+    Generate SHA-256 hash from file content for cache key and deduplication.
+
+    This ensures:
+    - Same image content = same hash (deduplication)
+    - Different images with same filename = different hashes (correctness)
+    - No PII (IP addresses) in cache keys (privacy)
+
+    Args:
+        file_content: Raw bytes of the uploaded file
+
+    Returns:
+        Hex string of SHA-256 hash (64 characters)
+    """
+    return hashlib.sha256(file_content).hexdigest()
 
 
 @app.post("/upload")
 async def upload_and_analyze(request: Request, file: UploadFile = File(...)):
-    # Get client IP address
-    client_ip = request.client.host if request.client else "unknown"
-    """Upload a photo and get hash"""
+    """Upload a photo and get streaming analysis with caching"""
     if not file.content_type or not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="File must be an image")
 
-    # Get client IP address
+    # Read file content once for hashing and storage
+    file_content = await file.read()
+
+    # Generate content-based hash (fixes filename+IP weakness)
+    file_hash = get_content_hash(file_content)
+
+    # Get client IP for logging only (not used in cache key)
     client_ip = request.client.host if request.client else "unknown"
-    filename = file.filename or "unknown"
-    file_hash = get_hash_from_ip_filename(client_ip, filename)
+
+    # Track upload
+    cache_stats["uploads"] += 1
 
     # Check if this file has been analyzed before
     try:
@@ -115,24 +136,38 @@ async def upload_and_analyze(request: Request, file: UploadFile = File(...)):
         logger.error(f"Failed to check cache: {e}")
         cached_analysis = None
 
-    file_content = await file.read()
+    # Track cache hit/miss
+    if cached_analysis:
+        cache_stats["hits"] += 1
+        logger.info(f"Cache HIT for hash: {file_hash[:8]}...")
+    else:
+        cache_stats["misses"] += 1
+        logger.info(f"Cache MISS for hash: {file_hash[:8]}...")
 
     # Create directory for uploaded images if it doesn't exist
     upload_dir = "static/uploaded_images"
     os.makedirs(upload_dir, exist_ok=True)
 
-    # Save the original image with file_hash as filename
+    # Determine permanent storage path
     file_extension = os.path.splitext(file.filename)[1] if file.filename else ".jpg"
     stored_image_path = os.path.join(upload_dir, f"{file_hash}{file_extension}")
 
-    # Save original image permanently
-    with open(stored_image_path, "wb") as stored_file:
-        stored_file.write(file_content)
+    # Only write permanent file if it doesn't exist (fixes redundant writes on cache hit)
+    if not os.path.exists(stored_image_path):
+        with open(stored_image_path, "wb") as stored_file:
+            stored_file.write(file_content)
+        logger.info(f"Stored new image: {stored_image_path}")
+    else:
+        logger.info(f"Image already exists (deduplication): {stored_image_path}")
 
-    # Create temporary file for analysis (will be deleted after analysis)
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as temp_file:
+    # Create temporary file for analysis (proper cleanup with context manager)
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=file_extension)
+    try:
         temp_file.write(file_content)
+        temp_file.flush()
         temp_file_path = temp_file.name
+    finally:
+        temp_file.close()
 
     async def generate_analysis():
         yield f"file_hash: {json.dumps({'file_hash': file_hash})}\n\n"
@@ -397,6 +432,45 @@ async def generate_image_from_text(
 async def health_check():
     """Health check endpoint"""
     return {"status": "healthy"}
+
+
+@app.get("/cache/stats")
+async def get_cache_stats():
+    """
+    Get cache statistics for monitoring performance.
+
+    Returns:
+        - hits: Number of cache hits
+        - misses: Number of cache misses
+        - uploads: Total uploads
+        - hit_rate: Percentage of cache hits
+        - unique_images: Number of unique images stored
+    """
+    try:
+        # Get unique image count from filesystem
+        upload_dir = "static/uploaded_images"
+        unique_images = len(os.listdir(upload_dir)) if os.path.exists(upload_dir) else 0
+
+        total_requests = cache_stats["hits"] + cache_stats["misses"]
+        hit_rate = (
+            (cache_stats["hits"] / total_requests * 100) if total_requests > 0 else 0.0
+        )
+
+        return {
+            "cache_hits": cache_stats["hits"],
+            "cache_misses": cache_stats["misses"],
+            "total_uploads": cache_stats["uploads"],
+            "hit_rate_percent": round(hit_rate, 2),
+            "unique_images_stored": unique_images,
+            "deduplication_savings": cache_stats["uploads"] - unique_images
+            if cache_stats["uploads"] > 0
+            else 0,
+        }
+    except Exception as e:
+        logger.error(f"Failed to get cache stats: {e}")
+        raise HTTPException(
+            status_code=500, detail="Failed to retrieve cache statistics"
+        )
 
 
 if __name__ == "__main__":
