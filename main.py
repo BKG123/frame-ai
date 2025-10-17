@@ -18,6 +18,8 @@ from prompts import (
     IMAGE_GEN_USER_PROMPT,
     EDIT_INS_GEN_SYSTEM_PROMPT,
     EDIT_INS_GEN_USER_PROMPT,
+    ENHANCEMENT_TEXT_TO_JSON_SYSTEM_PROMPT,
+    ENHANCEMENT_TEXT_TO_JSON_USER_PROMPT,
 )
 
 logger = get_logger(__name__)
@@ -58,6 +60,7 @@ class GeneratedImage(BaseModel):
     title: str
     image_path: str
     text_response: Optional[str] = None
+    enhancements: Optional[Dict] = None  # Structured JSON of enhancements
     metrics: Optional[Dict] = None
 
 
@@ -307,6 +310,7 @@ async def edit_image(request: ImageEditRequest):
             editing_instructions_json = await gemini_llm_call(
                 system_prompt=EDIT_INS_GEN_SYSTEM_PROMPT,
                 user_prompt=edit_ins_user_prompt,
+                json_format=True,
                 model_name="gemini-2.5-flash",
                 temperature=0.5,
             )
@@ -394,10 +398,54 @@ async def edit_image(request: ImageEditRequest):
                         f"Output image not found for {prompt_key} at {output_path_var}"
                     )
 
+                # Convert text_response to structured JSON using LLM
+                enhancements_json = None
+                if result.get("text"):
+                    try:
+                        logger.info(
+                            f"Converting text response to JSON for {prompt_key}"
+                        )
+                        enhancement_user_prompt = (
+                            ENHANCEMENT_TEXT_TO_JSON_USER_PROMPT.format(
+                                enhancement_text=result.get("text")
+                            )
+                        )
+
+                        enhancements_json_str = await gemini_llm_call(
+                            system_prompt=ENHANCEMENT_TEXT_TO_JSON_SYSTEM_PROMPT,
+                            user_prompt=enhancement_user_prompt,
+                            json_format=True,
+                            model_name="gemini-2.5-flash-lite",
+                            temperature=0,
+                        )
+
+                        # Parse the JSON string
+                        if enhancements_json_str:
+                            # Clean up any markdown formatting
+                            json_str = enhancements_json_str.strip()
+                            if json_str.startswith("```json"):
+                                json_str = json_str[7:]
+                            if json_str.startswith("```"):
+                                json_str = json_str[3:]
+                            if json_str.endswith("```"):
+                                json_str = json_str[:-3]
+                            json_str = json_str.strip()
+
+                            enhancements_json = json.loads(json_str)
+                            logger.info(
+                                f"Successfully converted to JSON for {prompt_key}"
+                            )
+                    except Exception as e:
+                        logger.error(
+                            f"Failed to convert text to JSON for {prompt_key}: {e}"
+                        )
+                        # Keep the original text response if conversion fails
+
                 return GeneratedImage(
                     title=prompt_data["title"],
                     image_path=f"/static/generated_images/{output_filename_var}",
                     text_response=result.get("text"),
+                    enhancements=enhancements_json,
                     metrics=metrics,
                 )
             except Exception as e:

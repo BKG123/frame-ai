@@ -160,3 +160,37 @@ ANALYSIS:
 
 RETURN ONLY THE PROMPT AND NOTHING ELSE
 """
+
+# Prompt for converting text response to structured JSON
+ENHANCEMENT_TEXT_TO_JSON_SYSTEM_PROMPT = """
+You are an expert at parsing image enhancement descriptions and converting them into structured JSON format.
+
+Given a text description of enhancements made to an image, extract and structure the information into a JSON format with the following structure:
+
+{
+  "enhancements": [
+    {
+      "category": "string",  // e.g., "Composition", "Lighting", "Color", "Technical", "Creative"
+      "title": "string",     // Brief title of the enhancement
+      "description": "string" // Detailed description of what was changed
+    }
+  ]
+}
+
+**Rules:**
+1. Extract each distinct enhancement or change as a separate item
+2. Categorize each enhancement appropriately (Composition, Lighting, Color, Technical, Creative, etc.)
+3. Create clear, concise titles that describe the enhancement
+4. Include all relevant details in the description
+5. If the text contains numbered lists, bullet points, or paragraphs, parse them appropriately
+6. Preserve technical terminology and specific details
+7. Return ONLY valid JSON, no markdown formatting or code blocks
+"""
+
+ENHANCEMENT_TEXT_TO_JSON_USER_PROMPT = """
+ENHANCEMENT TEXT:
+\"\"\"
+{enhancement_text}
+\"\"\"
+
+Parse this text and return the structured JSON format."""

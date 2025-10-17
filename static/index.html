@@ -2450,7 +2450,11 @@
             }
 
             // Show/hide enhancement details
-            if (imageData.text_response) {
+            // Prefer structured enhancements JSON, fallback to text parsing
+            if (imageData.enhancements && imageData.enhancements.enhancements) {
+                changesContent.innerHTML = renderStructuredEnhancements(imageData.enhancements.enhancements);
+                changesDiv.style.display = 'block';
+            } else if (imageData.text_response) {
                 changesContent.innerHTML = parseEnhancements(imageData.text_response);
                 changesDiv.style.display = 'block';
             } else {
@@ -2573,7 +2577,49 @@
             return html;
         }
 
-        // Parse enhancement text into structured cards
+        // Render structured enhancements from JSON
+        function renderStructuredEnhancements(enhancements) {
+            // Map of categories to icons
+            const categoryIcons = {
+                'composition': '✂️',
+                'lighting': '💡',
+                'color': '🎨',
+                'technical': '🔧',
+                'creative': '✨',
+                'exposure': '☀️',
+                'contrast': '◐',
+                'saturation': '🌈',
+                'default': '🎨'
+            };
+
+            // Function to get icon based on category
+            function getIconForCategory(category) {
+                const lowerCategory = category.toLowerCase();
+                return categoryIcons[lowerCategory] || categoryIcons.default;
+            }
+
+            if (!enhancements || enhancements.length === 0) {
+                return '<p>No enhancement details available.</p>';
+            }
+
+            return enhancements.map(enhancement => {
+                const icon = getIconForCategory(enhancement.category || 'default');
+                const title = enhancement.title || 'Enhancement';
+                const description = enhancement.description || '';
+
+                return `
+                    <div class="enhancement-item">
+                        <div class="enhancement-item-header">
+                            <span class="enhancement-icon">${icon}</span>
+                            <span class="enhancement-title">${title}</span>
+                        </div>
+                        <div class="enhancement-description">${description}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Parse enhancement text into structured cards (fallback for old data)
         function parseEnhancements(text) {
             // Map of enhancement types to icons
             const enhancementIcons = {
