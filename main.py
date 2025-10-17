@@ -7,6 +7,7 @@ import os
 import tempfile
 import json
 import hashlib
+import asyncio
 from config.logger import get_logger
 from services.analysis import PhotoAnalyzer
 from services.database import db
@@ -53,12 +54,17 @@ class EditResponse(BaseModel):
     results: Dict[str, str]
 
 
+class GeneratedImage(BaseModel):
+    title: str
+    image_path: str
+    text_response: Optional[str] = None
+    metrics: Optional[Dict] = None
+
+
 class ImageEditResponse(BaseModel):
     success: bool
-    image_path: Optional[str] = None
-    text_response: Optional[str] = None
+    images: Optional[list[GeneratedImage]] = None
     error: Optional[str] = None
-    metrics: Optional[Dict] = None
 
 
 class AnalysisHistoryResponse(BaseModel):
@@ -287,11 +293,8 @@ async def edit_image(request: ImageEditRequest):
         output_dir = "static/generated_images"
         os.makedirs(output_dir, exist_ok=True)
 
-        # Generate unique filename for the edited image
+        # Import uuid for generating unique filenames
         import uuid
-
-        output_filename = f"edited_{uuid.uuid4().hex}.png"
-        output_path = os.path.join(output_dir, output_filename)
 
         # Use existing prompts with analysis context only
         analysis_context = cached_analysis["analysis_text"]
@@ -301,7 +304,7 @@ async def edit_image(request: ImageEditRequest):
 
         # Generate editing instructions with error handling
         try:
-            editing_instructions = await gemini_llm_call(
+            editing_instructions_json = await gemini_llm_call(
                 system_prompt=EDIT_INS_GEN_SYSTEM_PROMPT,
                 user_prompt=edit_ins_user_prompt,
                 model_name="gemini-2.5-flash",
@@ -309,11 +312,36 @@ async def edit_image(request: ImageEditRequest):
             )
 
             # Check if instructions were actually generated
-            if not editing_instructions or not editing_instructions.strip():
+            if not editing_instructions_json or not editing_instructions_json.strip():
                 logger.error("Generated editing instructions are empty")
                 raise HTTPException(
                     status_code=500,
                     detail="Failed to generate editing instructions: AI returned empty response",
+                )
+
+            # Parse the JSON response containing 3 prompts
+            try:
+                # Remove markdown code blocks if present
+                json_str = editing_instructions_json.strip()
+                if json_str.startswith("```json"):
+                    json_str = json_str[7:]
+                if json_str.startswith("```"):
+                    json_str = json_str[3:]
+                if json_str.endswith("```"):
+                    json_str = json_str[:-3]
+                json_str = json_str.strip()
+
+                prompts_data = json.loads(json_str)
+                logger.info(
+                    f"Successfully parsed 3 editing prompts: {list(prompts_data.keys())}"
+                )
+            except json.JSONDecodeError as e:
+                logger.error(
+                    f"Failed to parse JSON response: {e}\nResponse: {editing_instructions_json}"
+                )
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Failed to parse editing instructions JSON: {str(e)}",
                 )
 
         except HTTPException:
@@ -325,50 +353,85 @@ async def edit_image(request: ImageEditRequest):
                 detail=f"Failed to generate editing instructions: {str(e)}",
             )
 
-        # Format the user prompt with analysis context only
-        formatted_user_prompt = IMAGE_GEN_USER_PROMPT.format(
-            instructions=editing_instructions
-        )
-
-        # Call the generate_image function with existing prompts
-        result = generate_image(
-            system_prompt=IMAGE_GEN_SYSTEM_PROMPT,
-            user_prompt=formatted_user_prompt,
-            input_image_path=cached_analysis["image_path"],
-            output_file_path=output_path,
-        )
-
-        # Calculate before/after comparison metrics only if image was generated
-        metrics = None
-        if result.get("image_path") and os.path.exists(output_path):
+        # Define async function to generate a single image
+        async def generate_single_image(
+            prompt_key: str, prompt_data: dict
+        ) -> GeneratedImage:
             try:
-                metrics = compare_image_metrics(
-                    original_path=cached_analysis["image_path"], edited_path=output_path
-                )
-                logger.info(f"Metrics calculated successfully: {metrics}")
-            except Exception as e:
-                logger.error(f"Failed to calculate metrics: {e}")
-                # Continue without metrics rather than failing the whole request
-        else:
-            logger.warning(
-                f"Skipping metrics calculation - output image not found at {output_path}"
-            )
+                # Generate unique filename for this variation
+                output_filename_var = f"edited_{uuid.uuid4().hex}.png"
+                output_path_var = os.path.join(output_dir, output_filename_var)
 
-        return ImageEditResponse(
-            success=True,
-            image_path=f"/static/generated_images/{output_filename}",
-            text_response=result.get("text"),
-            error=None,
-            metrics=metrics,
-        )
+                # Format the user prompt
+                formatted_user_prompt = IMAGE_GEN_USER_PROMPT.format(
+                    instructions=prompt_data["prompt"]
+                )
+
+                # Generate the image (synchronous call, but we'll run in executor)
+                result = await asyncio.to_thread(
+                    generate_image,
+                    system_prompt=IMAGE_GEN_SYSTEM_PROMPT,
+                    user_prompt=formatted_user_prompt,
+                    input_image_path=cached_analysis["image_path"],
+                    output_file_path=output_path_var,
+                )
+
+                # Calculate metrics if image was generated
+                metrics = None
+                if result.get("image_path") and os.path.exists(output_path_var):
+                    try:
+                        metrics = compare_image_metrics(
+                            original_path=cached_analysis["image_path"],
+                            edited_path=output_path_var,
+                        )
+                        logger.info(f"Metrics calculated for {prompt_key}: {metrics}")
+                    except Exception as e:
+                        logger.error(
+                            f"Failed to calculate metrics for {prompt_key}: {e}"
+                        )
+                else:
+                    logger.warning(
+                        f"Output image not found for {prompt_key} at {output_path_var}"
+                    )
+
+                return GeneratedImage(
+                    title=prompt_data["title"],
+                    image_path=f"/static/generated_images/{output_filename_var}",
+                    text_response=result.get("text"),
+                    metrics=metrics,
+                )
+            except Exception as e:
+                logger.error(f"Error generating image for {prompt_key}: {e}")
+                raise
+
+        # Generate all 3 images in parallel
+        try:
+            logger.info("Starting parallel image generation for 3 prompts...")
+            tasks = [
+                generate_single_image("prompt1", prompts_data["prompt1"]),
+                generate_single_image("prompt2", prompts_data["prompt2"]),
+                generate_single_image("prompt3", prompts_data["prompt3"]),
+            ]
+            generated_images = await asyncio.gather(*tasks)
+            logger.info(f"Successfully generated {len(generated_images)} images")
+
+            return ImageEditResponse(
+                success=True,
+                images=list(generated_images),
+                error=None,
+            )
+        except Exception as e:
+            logger.error(f"Failed during parallel image generation: {e}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to generate images: {str(e)}",
+            )
 
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error in image editing: {e}")
-        return ImageEditResponse(
-            success=False, image_path=None, text_response=None, error=str(e)
-        )
+        return ImageEditResponse(success=False, images=None, error=str(e))
 
 
 @app.post("/image/generate", response_model=ImageEditResponse)
@@ -414,18 +477,22 @@ async def generate_image_from_text(
             except Exception as e:
                 logger.error(f"Failed to clean up temp file: {e}")
 
-        return ImageEditResponse(
-            success=True,
+        generated_image = GeneratedImage(
+            title="Custom Generated Image",
             image_path=f"/static/generated_images/{output_filename}",
             text_response=result.get("text"),
+            metrics=None,
+        )
+
+        return ImageEditResponse(
+            success=True,
+            images=[generated_image],
             error=None,
         )
 
     except Exception as e:
         logger.error(f"Error in image generation: {e}")
-        return ImageEditResponse(
-            success=False, image_path=None, text_response=None, error=str(e)
-        )
+        return ImageEditResponse(success=False, images=None, error=str(e))
 
 
 @app.get("/health")

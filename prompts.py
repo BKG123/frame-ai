@@ -115,20 +115,42 @@ EDITING INSTRUCTIONS:
 \"\"\"
 """
 EDIT_INS_GEN_SYSTEM_PROMPT = """
-Given LLM assisted analysis of a photograph, craft a prompt for editing the same image incorporating the best practices to be followed.
+Given an LLM-assisted analysis of a photograph, craft **3 distinct, dynamically generated prompts** for professional photographic editing of the same image. Each prompt must be derived directly from the analysis, proposing a unique, high-level professional editing direction.
 
+The three prompts should be conceptually distinct:
 
+1.  **Technical Perfection & Enhancement:** A prompt that focuses on correcting identified flaws and elevating the existing image to a high professional standard (e.g., improving sharpness, balancing exposure, refining colors). The title should reflect the specific goal, like "Studio-Quality Portrait Refinement" or "Dynamic Range Recovery for Landscape."
+2.  **Atmospheric & Mood Reinterpretation:** A prompt that uses the analysis as a starting point to completely transform the emotional tone and atmosphere of the image through advanced color grading, lighting manipulation, and texture work. The title should capture the new mood, such as "Evoking a Moody, Cinematic Dusk" or "Creating a Warm, Nostalgic Golden Hour."
+3.  **Conceptual & Narrative Composite:** A prompt that reimagines the story of the image by photorealistically adding, removing, or altering key elements based on opportunities identified in the analysis. The focus must be on seamless, believable integration. The title should hint at the new narrative, like "Integrating Dramatic Weather Elements" or "Transforming Setting to a Serene Fantasy Forest."
 
-BEST PRACTICES:
+For all three prompts, adhere to the following best practices for professional-grade results.
 
-To elevate your results from good to great, incorporate these professional strategies into your workflow.
+**BEST PRACTICES:**
 
-Be Hyper-Specific: The more detail you provide, the more control you have. Instead of "fantasy armor," describe it: "ornate elven plate armor, etched with silver leaf patterns, with a high collar and pauldrons shaped like falcon wings."
-Provide Context and Intent: Explain the purpose of the image. The model's understanding of context will influence the final output. For example, "Create a logo for a high-end, minimalist skincare brand" will yield better results than just "Create a logo."
-Iterate and Refine: Don't expect a perfect image on the first try. Use the conversational nature of the model to make small changes. Follow up with prompts like, "That's great, but can you make the lighting a bit warmer?" or "Keep everything the same, but change the character's expression to be more serious."
-Use Step-by-Step Instructions: For complex scenes with many elements, break your prompt into steps. "First, create a background of a serene, misty forest at dawn. Then, in the foreground, add a moss-covered ancient stone altar. Finally, place a single, glowing sword on top of the altar."
-Use "Semantic Negative Prompts": Instead of saying "no cars," describe the desired scene positively: "an empty, deserted street with no signs of traffic."
-Control the Camera: Use photographic and cinematic language to control the composition. Terms like wide-angle shot, macro shot, low-angle perspective.
+  * **Be Hyper-Specific:** Instead of "make it moody," specify the changes: "deepen the shadows, crush the blacks slightly, introduce a cool blue tone to the midtones, and desaturate the greens."
+  * **Use Professional Terminology:** Employ terms related to photography and post-production, such as "dodge and burn," "frequency separation," "color grading," "split toning," "lens compression," "shallow depth of field," and "cinematic teal and orange."
+  * **Define the Intent:** Explain the goal or intended use of the final image, such as "Edit for a luxury brand's advertising campaign, focusing on clean, crisp, and aspirational visuals."
+  * **Instruct Step-by-Step:** For complex edits, break down the process. "First, perform a global exposure and contrast correction. Second, isolate the subject and enhance their local contrast. Finally, apply a subtle cinematic color grade."
+  * **Use Semantic Negatives:** Instead of "no harsh light," describe the desired lighting positively: "Create a soft, diffused lighting setup, similar to a large softbox positioned just off-camera."
+  * **Control the Camera and Lens:** Reference photographic and cinematic language to guide the edit's feel, suggesting edits that emulate a "wide-angle shot," "macro shot with a shallow depth of field," or a "low-angle perspective for a heroic feel."
+
+-----
+
+**GIVE OUTPUT IN THE FOLLOWING JSON FORMAT:**
+{
+  "prompt1": {
+    "title": "<Generate a concise, dynamic title for the 'Technical Perfection & Enhancement' approach based on the analysis> ",
+    "prompt": "<Generate the detailed prompt for this approach, derived from the analysis and adhering to all best practices.>"
+  },
+  "prompt2": {
+    "title": "<Generate a concise, dynamic title for the 'Atmospheric & Mood Reinterpretation' approach based on the analysis>",
+    "prompt": "<Generate the detailed prompt for this approach, derived from the analysis and adhering to all best practices.>"
+  },
+  "prompt3": {
+    "title": "<Generate a concise, dynamic title for the 'Conceptual & Narrative Composite' approach based on the analysis>",
+    "prompt": "<Generate the detailed prompt for this approach, derived from the analysis and adhering to all best practices.>"
+  }
+}
 """
 EDIT_INS_GEN_USER_PROMPT = """
 ANALYSIS:

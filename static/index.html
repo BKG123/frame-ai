@@ -1345,6 +1345,15 @@
             color: #cbd5e1;
         }
 
+        body.dark #selected-image-details {
+            background: #1e293b;
+            border-color: #334155;
+        }
+
+        body.dark #selected-image-details h3 {
+            color: #e2e8f0;
+        }
+
         @media (max-width: 768px) {
             .image-comparison-container {
                 grid-template-columns: 1fr;
@@ -1576,68 +1585,64 @@
                 <div class="comparison-header">
                     <div class="comparison-title">
                         <span>✨</span>
-                        Before & After Comparison
+                        AI-Enhanced Variations
                     </div>
                     <div class="comparison-subtitle">
-                        See the improvements made by AI enhancement
+                        Three professional editing approaches generated for your image
                     </div>
                 </div>
 
-                <div class="image-comparison-container">
-                    <div class="comparison-image-wrapper">
-                        <div class="comparison-label original">
-                            <span>📷</span>
-                            Original Image
+                <!-- Original Image -->
+                <div style="margin-bottom: 2rem; text-align: center;">
+                    <div class="comparison-label original" style="justify-content: center; margin-bottom: 1rem;">
+                        <span>📷</span>
+                        Original Image
+                    </div>
+                    <img class="comparison-image" id="original-comparison-image" alt="Original Image" style="max-width: 100%; max-height: 400px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                </div>
+
+                <!-- Generated Variations Grid -->
+                <div id="generated-variations-grid" class="image-comparison-container" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;"></div>
+
+                <!-- Selected Image Details Section -->
+                <div id="selected-image-details" style="display: none; margin-top: 2rem; padding: 1.5rem; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="margin: 0; color: #1e293b; font-size: 1.25rem;">
+                            <span id="selected-image-title-icon">✨</span>
+                            <span id="selected-image-title">Selected Variation</span>
+                        </h3>
+                        <div class="image-actions" style="margin: 0;">
+                            <button class="action-btn" onclick="downloadSelectedImage()" style="padding: 0.5rem 1rem; font-size: 0.8rem;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="7,10 12,15 17,10"/>
+                                    <line x1="12" y1="15" x2="12" y2="3"/>
+                                </svg>
+                                Download
+                            </button>
                         </div>
-                        <img class="comparison-image" id="original-comparison-image" alt="Original Image">
                     </div>
 
-                    <div class="comparison-image-wrapper">
-                        <div class="comparison-label enhanced">
-                            <span>✨</span>
-                            Enhanced Image
+                    <!-- Metrics Comparison Section -->
+                    <div id="metrics-comparison" style="display: none; margin-bottom: 1.5rem;">
+                        <div class="metrics-header">
+                            <span>📊</span>
+                            <h3 style="margin: 0;">Before/After Metrics</h3>
                         </div>
-                        <img class="comparison-image" id="generated-image" alt="Enhanced Image">
+                        <div id="metrics-content" class="metrics-grid"></div>
                     </div>
-                </div>
 
-                <div class="image-actions">
-                    <button class="action-btn" onclick="downloadGeneratedImage()">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                            <polyline points="7,10 12,15 17,10"/>
-                            <line x1="12" y1="15" x2="12" y2="3"/>
-                        </svg>
-                        Download Enhanced
-                    </button>
-                    <button class="action-btn" onclick="copyGeneratedImage()">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
-                            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
-                        </svg>
-                        Copy Enhanced
-                    </button>
-                </div>
-
-                <!-- Metrics Comparison Section -->
-                <div id="metrics-comparison" style="display: none; margin-top: 1.5rem;">
-                    <div class="metrics-header">
-                        <span>📊</span>
-                        <h3 style="margin: 0;">Before/After Comparison Metrics</h3>
-                    </div>
-                    <div id="metrics-content" class="metrics-grid"></div>
-                </div>
-
-                <!-- AI Enhancement Changes Section - Collapsible -->
-                <div id="enhancement-changes" style="display: none; margin-top: 1.5rem;">
-                    <div class="enhancement-header-collapsible" onclick="toggleEnhancementDetails()">
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <span>🎨</span>
-                            <h3 style="margin: 0;">AI Enhancement Details</h3>
+                    <!-- AI Enhancement Changes Section - Collapsible -->
+                    <div id="enhancement-changes" style="display: none;">
+                        <div class="enhancement-header-collapsible" onclick="toggleEnhancementDetails()">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span>🎨</span>
+                                <h3 style="margin: 0;">AI Enhancement Details</h3>
+                            </div>
+                            <div class="collapse-toggle" id="enhancement-toggle">▼</div>
                         </div>
-                        <div class="collapse-toggle" id="enhancement-toggle">▼</div>
+                        <div id="enhancement-changes-content" class="enhancement-grid collapsed"></div>
                     </div>
-                    <div id="enhancement-changes-content" class="enhancement-grid collapsed"></div>
                 </div>
             </div>
         </div>
@@ -2357,51 +2362,46 @@
 
                 const result = await response.json();
 
-                if (result.success && result.image_path) {
-                    // Show both original and enhanced images for comparison
-                    const generatedImage = document.getElementById('generated-image');
+                if (result.success && result.images && result.images.length > 0) {
                     const originalComparisonImage = document.getElementById('original-comparison-image');
                     const generatedImageArea = document.getElementById('generated-image-area');
+                    const generatedVariationsGrid = document.getElementById('generated-variations-grid');
                     const previewImage = document.getElementById('preview-image');
-
-                    // Set the enhanced image
-                    generatedImage.src = result.image_path;
 
                     // Set the original image for comparison
                     originalComparisonImage.src = previewImage.src;
+
+                    // Clear previous variations
+                    generatedVariationsGrid.innerHTML = '';
+
+                    // Create cards for each generated variation
+                    result.images.forEach((imageData, index) => {
+                        const variationCard = document.createElement('div');
+                        variationCard.className = 'comparison-image-wrapper';
+                        variationCard.innerHTML = `
+                            <div class="comparison-label enhanced">
+                                <span>✨</span>
+                                ${imageData.title}
+                            </div>
+                            <img class="comparison-image" src="${imageData.image_path}" alt="${imageData.title}"
+                                 data-index="${index}" style="cursor: pointer;" onclick="showImageDetails(${index})">
+                        `;
+                        generatedVariationsGrid.appendChild(variationCard);
+                    });
+
+                    // Store the images data globally for later access
+                    window.generatedImages = result.images;
 
                     // Show the comparison area
                     generatedImageArea.style.display = 'block';
 
                     // Show success message
-                    showSuccess('Image enhanced successfully!');
-
-                    // Display metrics comparison if available
-                    if (result.metrics) {
-                        console.log('Metrics calculated:', result.metrics);
-                        const metricsDiv = document.getElementById('metrics-comparison');
-                        const metricsContent = document.getElementById('metrics-content');
-
-                        // Parse and format the metrics
-                        metricsContent.innerHTML = renderMetrics(result.metrics);
-                        metricsDiv.style.display = 'block';
-                    }
-
-                    // Display the changes made by AI if available
-                    if (result.text_response) {
-                        console.log('AI enhancements made:', result.text_response);
-                        const changesDiv = document.getElementById('enhancement-changes');
-                        const changesContent = document.getElementById('enhancement-changes-content');
-
-                        // Parse and format the enhancements
-                        changesContent.innerHTML = parseEnhancements(result.text_response);
-                        changesDiv.style.display = 'block';
-                    }
+                    showSuccess(`${result.images.length} variations generated successfully!`);
 
                     // Hide the modal
                     hideImageEditor();
 
-                    // Scroll to the generated image
+                    // Scroll to the generated images
                     generatedImageArea.scrollIntoView({ behavior: 'smooth' });
                 } else {
                     throw new Error(result.error || 'Failed to enhance image');
@@ -2421,23 +2421,69 @@
             }
         }
 
-        async function downloadGeneratedImage() {
-            const generatedImage = document.getElementById('generated-image');
-
-            if (!generatedImage.src) {
-                showError('No generated image to download.');
+        // Show details for a specific image variation
+        function showImageDetails(index) {
+            if (!window.generatedImages || !window.generatedImages[index]) {
                 return;
             }
 
+            const imageData = window.generatedImages[index];
+            const detailsSection = document.getElementById('selected-image-details');
+            const titleSpan = document.getElementById('selected-image-title');
+            const metricsDiv = document.getElementById('metrics-comparison');
+            const metricsContent = document.getElementById('metrics-content');
+            const changesDiv = document.getElementById('enhancement-changes');
+            const changesContent = document.getElementById('enhancement-changes-content');
+
+            // Store selected image index globally for download
+            window.selectedImageIndex = index;
+
+            // Update title
+            titleSpan.textContent = imageData.title;
+
+            // Show/hide metrics
+            if (imageData.metrics) {
+                metricsContent.innerHTML = renderMetrics(imageData.metrics);
+                metricsDiv.style.display = 'block';
+            } else {
+                metricsDiv.style.display = 'none';
+            }
+
+            // Show/hide enhancement details
+            if (imageData.text_response) {
+                changesContent.innerHTML = parseEnhancements(imageData.text_response);
+                changesDiv.style.display = 'block';
+            } else {
+                changesDiv.style.display = 'none';
+            }
+
+            // Show the details section
+            detailsSection.style.display = 'block';
+
+            // Scroll to details
+            detailsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        async function downloadSelectedImage() {
+            if (window.selectedImageIndex === undefined || !window.generatedImages) {
+                showError('No image selected to download.');
+                return;
+            }
+
+            const imageData = window.generatedImages[window.selectedImageIndex];
+            const imagePath = imageData.image_path;
+
             try {
-                const response = await fetch(generatedImage.src);
+                const response = await fetch(imagePath);
                 const blob = await response.blob();
                 const url = window.URL.createObjectURL(blob);
 
                 const a = document.createElement('a');
                 a.style.display = 'none';
                 a.href = url;
-                a.download = 'generated_image.png';
+                // Create filename from title
+                const filename = imageData.title.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '.png';
+                a.download = filename;
                 document.body.appendChild(a);
                 a.click();
                 window.URL.revokeObjectURL(url);
@@ -2447,37 +2493,6 @@
             } catch (error) {
                 console.error('Download failed:', error);
                 showError('Failed to download image. Please try again.');
-            }
-        }
-
-        async function copyGeneratedImage() {
-            const generatedImage = document.getElementById('generated-image');
-
-            if (!generatedImage.src) {
-                showError('No generated image to copy.');
-                return;
-            }
-
-            try {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                canvas.width = generatedImage.naturalWidth;
-                canvas.height = generatedImage.naturalHeight;
-                ctx.drawImage(generatedImage, 0, 0);
-
-                canvas.toBlob(async (blob) => {
-                    try {
-                        const clipboardItem = new ClipboardItem({ 'image/png': blob });
-                        await navigator.clipboard.write([clipboardItem]);
-                        showSuccess('Generated image copied to clipboard!');
-                    } catch (e) {
-                        console.error('Clipboard copy failed:', e);
-                        showError('Unable to copy image to clipboard. Your browser may not support this feature.');
-                    }
-                }, 'image/png');
-            } catch (error) {
-                console.error('Image copy failed:', error);
-                showError('Failed to copy image. Please try again.');
             }
         }
 
