@@ -1290,197 +1290,6 @@
             background: #64748b;
         }
 
-        /* Metrics Comparison Styles */
-        #metrics-comparison {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 1.5rem;
-            overflow: hidden;
-        }
-
-        .metrics-header {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-            font-size: 1rem;
-            font-weight: 600;
-            color: #475569;
-        }
-
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1rem;
-        }
-
-        .metric-card {
-            background: white;
-            border-radius: 8px;
-            padding: 1rem;
-            border-left: 4px solid #6366f1;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-            transition: all 0.2s ease;
-        }
-
-        .metric-card:hover {
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transform: translateY(-2px);
-        }
-
-        .metric-card.positive {
-            border-left-color: #10b981;
-        }
-
-        .metric-card.negative {
-            border-left-color: #ef4444;
-        }
-
-        .metric-card.neutral {
-            border-left-color: #94a3b8;
-        }
-
-        .metric-label {
-            display: flex;
-            align-items: flex-start;
-            gap: 0.75rem;
-            margin-bottom: 1rem;
-        }
-
-        .metric-icon {
-            font-size: 1.5rem;
-            flex-shrink: 0;
-        }
-
-        .metric-title {
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: #1e293b;
-            margin-bottom: 0.25rem;
-        }
-
-        .metric-subtitle {
-            font-size: 0.75rem;
-            color: #64748b;
-            font-weight: 400;
-        }
-
-        .metric-values {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-            margin-bottom: 1rem;
-        }
-
-        .metric-value-row {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.813rem;
-        }
-
-        .metric-value-label {
-            color: #64748b;
-            min-width: 50px;
-            font-weight: 500;
-        }
-
-        .metric-bar-container {
-            flex: 1;
-            height: 8px;
-            background: rgba(0, 0, 0, 0.05);
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .metric-bar {
-            height: 100%;
-            border-radius: 4px;
-            transition: width 0.3s ease;
-        }
-
-        .metric-value-number {
-            font-weight: 700;
-            color: #1e293b;
-            min-width: 40px;
-            text-align: right;
-        }
-
-        .metric-optimization {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 0.625rem 0.75rem;
-            border-radius: 6px;
-            font-size: 0.875rem;
-            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-            color: #065f46;
-            font-weight: 600;
-        }
-
-        .optimization-icon {
-            font-size: 1.1rem;
-        }
-
-        .optimization-label {
-            font-weight: 600;
-            letter-spacing: 0.025em;
-        }
-
-        .metric-card.neutral .metric-optimization {
-            background: #f1f5f9;
-            color: #64748b;
-        }
-
-        body.dark #metrics-comparison {
-            background: #1e293b;
-            border-color: #334155;
-        }
-
-        body.dark .metrics-header {
-            color: #cbd5e1;
-        }
-
-        body.dark .metric-card {
-            background: #334155;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-        }
-
-        body.dark .metric-card:hover {
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-        }
-
-        body.dark .metric-title {
-            color: #e2e8f0;
-        }
-
-        body.dark .metric-subtitle {
-            color: #94a3b8;
-        }
-
-        body.dark .metric-value-label {
-            color: #94a3b8;
-        }
-
-        body.dark .metric-bar-container {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        body.dark .metric-value-number {
-            color: #e2e8f0;
-        }
-
-        body.dark .metric-optimization {
-            background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
-            color: #6ee7b7;
-        }
-
-        body.dark .metric-card.neutral .metric-optimization {
-            background: #475569;
-            color: #cbd5e1;
-        }
 
         body.dark #selected-image-details {
             background: #1e293b;
@@ -1489,6 +1298,20 @@
 
         body.dark #selected-image-details h3 {
             color: #e2e8f0;
+        }
+
+        /* AI Disclaimer Dark Mode */
+        body.dark #selected-image-details > div:nth-child(2) {
+            background: #1e3a5f;
+            border-left-color: #3b82f6;
+        }
+
+        body.dark #selected-image-details > div:nth-child(2) > div > div:first-child {
+            color: #93c5fd;
+        }
+
+        body.dark #selected-image-details > div:nth-child(2) > div > div:last-child {
+            color: #cbd5e1;
         }
 
         @media (max-width: 768px) {
@@ -1760,14 +1583,19 @@
                         </div>
                     </div>
 
-                    <!-- Metrics Comparison Section -->
-                    <div id="metrics-comparison" style="display: none; margin-bottom: 1.5rem;">
-                        <div class="metrics-header">
-                            <span>✨</span>
-                            <h3 style="margin: 0;">AI Optimizations Applied</h3>
+                    <!-- AI Generation Disclaimer -->
+                    <div style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                        <div style="display: flex; align-items: start; gap: 0.75rem;">
+                            <span style="font-size: 1.25rem;">🤖</span>
+                            <div>
+                                <div style="font-weight: 600; color: #1e40af; margin-bottom: 0.25rem; font-size: 0.9rem;">AI-Generated Recreation</div>
+                                <div style="color: #475569; font-size: 0.85rem; line-height: 1.5;">
+                                    This is a new image created by AI based on your original photo and our analysis. It's not a direct enhancement, but an artistic interpretation addressing the identified areas for improvement.
+                                </div>
+                            </div>
                         </div>
-                        <div id="metrics-content" class="metrics-grid"></div>
                     </div>
+
 
                     <!-- AI Enhancement Changes Section - Collapsible -->
                     <div id="enhancement-changes" style="display: none;">
@@ -2637,8 +2465,6 @@
             const imageData = window.generatedImages[index];
             const detailsSection = document.getElementById('selected-image-details');
             const titleSpan = document.getElementById('selected-image-title');
-            const metricsDiv = document.getElementById('metrics-comparison');
-            const metricsContent = document.getElementById('metrics-content');
             const changesDiv = document.getElementById('enhancement-changes');
             const changesContent = document.getElementById('enhancement-changes-content');
 
@@ -2647,14 +2473,6 @@
 
             // Update title
             titleSpan.textContent = imageData.title;
-
-            // Show/hide metrics
-            if (imageData.metrics) {
-                metricsContent.innerHTML = renderMetrics(imageData.metrics);
-                metricsDiv.style.display = 'block';
-            } else {
-                metricsDiv.style.display = 'none';
-            }
 
             // Show/hide enhancement details
             // Prefer structured enhancements JSON, fallback to text parsing
@@ -2707,117 +2525,6 @@
             }
         }
 
-        // Render metrics comparison cards
-        function renderMetrics(metrics) {
-            if (!metrics || !metrics.original || !metrics.edited || !metrics.changes) {
-                return '<p>Metrics data not available.</p>';
-            }
-
-            const metricsConfig = [
-                {
-                    key: 'overall_quality',
-                    label: 'Overall Quality',
-                    icon: '⭐',
-                    positiveLabels: ['Optimized', 'Enhanced', 'Refined', 'Improved'],
-                    neutralLabel: 'Preserved',
-                    negativeLabels: ['Artistically Adjusted', 'Stylistically Refined', 'Creatively Enhanced']
-                },
-                {
-                    key: 'sharpness',
-                    label: 'Detail & Clarity',
-                    icon: '🔍',
-                    positiveLabels: ['Sharpened', 'Detail Enhanced', 'Clarity Improved'],
-                    neutralLabel: 'Detail Preserved',
-                    negativeLabels: ['Smoothed', 'Noise Reduced', 'Refined']
-                },
-                {
-                    key: 'dynamic_range',
-                    label: 'Tonal Balance',
-                    icon: '◐',
-                    positiveLabels: ['Range Expanded', 'Contrast Enhanced', 'Depth Improved'],
-                    neutralLabel: 'Balance Maintained',
-                    negativeLabels: ['Film-like Effect', 'Matte Finish', 'Tones Balanced']
-                },
-                {
-                    key: 'color_richness',
-                    label: 'Color Quality',
-                    icon: '🎨',
-                    positiveLabels: ['Colors Enriched', 'Vibrancy Enhanced', 'Palette Improved'],
-                    neutralLabel: 'Colors Preserved',
-                    negativeLabels: ['Natural Look', 'Colors Refined', 'Subtle Tones']
-                }
-            ];
-
-            let html = '';
-
-            metricsConfig.forEach(config => {
-                const original = metrics.original[config.key];
-                const edited = metrics.edited[config.key];
-                const changePercent = metrics.changes[config.key + '_percent'];
-
-                // Context-aware labeling - always frame as intentional AI optimization
-                let optimizationLabel;
-                let optimizationIcon;
-                let cardType = 'positive';
-
-                if (Math.abs(changePercent) < 1) {
-                    // Minimal change
-                    optimizationLabel = config.neutralLabel;
-                    optimizationIcon = '✓';
-                    cardType = 'neutral';
-                } else if (changePercent > 0) {
-                    // Positive change
-                    const labels = config.positiveLabels;
-                    optimizationLabel = labels[Math.floor(Math.abs(changePercent) / 10) % labels.length];
-                    optimizationIcon = '✨';
-                    cardType = 'positive';
-                } else {
-                    // Negative change - frame as artistic choice
-                    const labels = config.negativeLabels;
-                    optimizationLabel = labels[Math.floor(Math.abs(changePercent) / 10) % labels.length];
-                    optimizationIcon = '🎨';
-                    cardType = 'positive'; // Still show as positive
-                }
-
-                // Create progress bar visualization
-                const originalPercent = original;
-                const editedPercent = edited;
-
-                html += `
-                    <div class="metric-card ${cardType}">
-                        <div class="metric-label">
-                            <span class="metric-icon">${config.icon}</span>
-                            <div>
-                                <div class="metric-title">${config.label}</div>
-                                <div class="metric-subtitle">${optimizationLabel}</div>
-                            </div>
-                        </div>
-                        <div class="metric-values">
-                            <div class="metric-value-row">
-                                <span class="metric-value-label">Before:</span>
-                                <div class="metric-bar-container">
-                                    <div class="metric-bar" style="width: ${originalPercent}%; background: rgba(150, 150, 150, 0.3);"></div>
-                                </div>
-                                <span class="metric-value-number">${original.toFixed(1)}</span>
-                            </div>
-                            <div class="metric-value-row">
-                                <span class="metric-value-label">After:</span>
-                                <div class="metric-bar-container">
-                                    <div class="metric-bar" style="width: ${editedPercent}%; background: linear-gradient(90deg, #4CAF50, #8BC34A);"></div>
-                                </div>
-                                <span class="metric-value-number">${edited.toFixed(1)}</span>
-                            </div>
-                        </div>
-                        <div class="metric-optimization">
-                            <span class="optimization-icon">${optimizationIcon}</span>
-                            <span class="optimization-label">${optimizationLabel}</span>
-                        </div>
-                    </div>
-                `;
-            });
-
-            return html;
-        }
 
         // Render structured enhancements from JSON
         function renderStructuredEnhancements(enhancements) {

@@ -12,7 +12,6 @@ from config.logger import get_logger
 from services.analysis import PhotoAnalyzer
 from services.database import db
 from services.llm import gemini_llm_call, generate_image
-from services.tools import compare_image_metrics
 from prompts import (
     IMAGE_GEN_SYSTEM_PROMPT,
     IMAGE_GEN_USER_PROMPT,
@@ -380,24 +379,6 @@ async def edit_image(request: ImageEditRequest):
                     output_file_path=output_path_var,
                 )
 
-                # Calculate metrics if image was generated
-                metrics = None
-                if result.get("image_path") and os.path.exists(output_path_var):
-                    try:
-                        metrics = compare_image_metrics(
-                            original_path=cached_analysis["image_path"],
-                            edited_path=output_path_var,
-                        )
-                        logger.info(f"Metrics calculated for {prompt_key}: {metrics}")
-                    except Exception as e:
-                        logger.error(
-                            f"Failed to calculate metrics for {prompt_key}: {e}"
-                        )
-                else:
-                    logger.warning(
-                        f"Output image not found for {prompt_key} at {output_path_var}"
-                    )
-
                 # Convert text_response to structured JSON using LLM
                 enhancements_json = None
                 if result.get("text"):
@@ -446,7 +427,7 @@ async def edit_image(request: ImageEditRequest):
                     image_path=f"/static/generated_images/{output_filename_var}",
                     text_response=result.get("text"),
                     enhancements=enhancements_json,
-                    metrics=metrics,
+                    metrics=None,
                 )
             except Exception as e:
                 logger.error(f"Error generating image for {prompt_key}: {e}")
