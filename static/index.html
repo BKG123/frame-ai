@@ -1812,9 +1812,23 @@
                 <div style="text-align: center; color: #64748b; font-size: 0.875rem;">
                     <p>Ready to enhance your image based on the professional analysis?</p>
                 </div>
+
+                <!-- Progress Bar Section (hidden by default) -->
+                <div id="enhancement-progress" style="display: none; margin-top: 1.5rem;">
+                    <div style="margin-bottom: 0.75rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <span id="enhancement-progress-status" style="font-size: 0.875rem; font-weight: 600; color: #6366f1;">Preparing...</span>
+                            <span id="enhancement-progress-percentage" style="font-size: 0.875rem; font-weight: 600; color: #6366f1;">0%</span>
+                        </div>
+                        <div style="width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
+                            <div id="enhancement-progress-bar-fill" style="width: 0%; height: 100%; background: linear-gradient(90deg, #6366f1, #8b5cf6); transition: width 0.3s ease; border-radius: 4px;"></div>
+                        </div>
+                    </div>
+                    <div id="enhancement-progress-message" style="font-size: 0.813rem; color: #64748b; text-align: center; min-height: 20px;"></div>
+                </div>
             </div>
             <div class="form-footer">
-                <button class="btn btn-secondary" onclick="hideImageEditor()">Cancel</button>
+                <button class="btn btn-secondary" id="cancel-btn" onclick="hideImageEditor()">Cancel</button>
                 <button class="btn" id="generate-btn" onclick="generateImage()">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M12 3v18m9-9H3"/>
@@ -2463,22 +2477,66 @@
 
         function hideImageEditor() {
             const modal = document.getElementById('image-editor-modal');
+            const progressSection = document.getElementById('enhancement-progress');
+            const generateBtn = document.getElementById('generate-btn');
+            const cancelBtn = document.getElementById('cancel-btn');
+
             modal.style.display = 'none';
+
+            // Reset progress UI when modal closes
+            progressSection.style.display = 'none';
+            generateBtn.style.display = 'inline-flex';
+            generateBtn.disabled = false;
+            cancelBtn.disabled = false;
         }
 
         async function generateImage() {
             const generateBtn = document.getElementById('generate-btn');
+            const cancelBtn = document.getElementById('cancel-btn');
+            const progressSection = document.getElementById('enhancement-progress');
+            const progressBar = document.getElementById('enhancement-progress-bar-fill');
+            const progressStatus = document.getElementById('enhancement-progress-status');
+            const progressPercentage = document.getElementById('enhancement-progress-percentage');
+            const progressMessage = document.getElementById('enhancement-progress-message');
 
             if (!currentFileHash) {
                 showError('No image to enhance. Please upload and analyze an image first.');
                 return;
             }
 
-            generateBtn.disabled = true;
-            generateBtn.innerHTML = `
-                <div class="spinner"></div>
-                Enhancing Image...
-            `;
+            // Show progress section, hide button, disable cancel
+            generateBtn.style.display = 'none';
+            cancelBtn.disabled = true;
+            progressSection.style.display = 'block';
+
+            // Progress stages with timing
+            const stages = [
+                { percent: 10, status: 'Initializing...', message: 'Preparing your image for enhancement' },
+                { percent: 25, status: 'Analyzing...', message: 'AI is analyzing composition and framing' },
+                { percent: 45, status: 'Processing...', message: 'Applying lighting and exposure adjustments' },
+                { percent: 65, status: 'Enhancing...', message: 'Optimizing color balance and tones' },
+                { percent: 85, status: 'Finalizing...', message: 'Adding final touches and clarity improvements' },
+                { percent: 95, status: 'Almost done...', message: 'Generating variations' }
+            ];
+
+            let currentStage = 0;
+
+            // Update progress UI
+            function updateProgress(percent, status, message) {
+                progressBar.style.width = percent + '%';
+                progressStatus.textContent = status;
+                progressPercentage.textContent = percent + '%';
+                progressMessage.textContent = message;
+            }
+
+            // Simulate progress during API call
+            const progressInterval = setInterval(() => {
+                if (currentStage < stages.length) {
+                    const stage = stages[currentStage];
+                    updateProgress(stage.percent, stage.status, stage.message);
+                    currentStage++;
+                }
+            }, 5000); // Update every 5 seconds
 
             try {
                 const requestData = {
@@ -2498,6 +2556,10 @@
                 }
 
                 const result = await response.json();
+
+                // Clear interval and show completion
+                clearInterval(progressInterval);
+                updateProgress(100, 'Complete!', 'Enhancement finished successfully');
 
                 if (result.success && result.images && result.images.length > 0) {
                     const originalComparisonImage = document.getElementById('original-comparison-image');
@@ -2546,15 +2608,23 @@
 
             } catch (error) {
                 console.error('Error enhancing image:', error);
+                clearInterval(progressInterval);
+                updateProgress(0, 'Error', 'Enhancement failed. Please try again.');
                 showError('Failed to enhance image: ' + error.message);
             } finally {
-                generateBtn.disabled = false;
-                generateBtn.innerHTML = `
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 3v18m9-9H3"/>
-                    </svg>
-                    Enhance Image
-                `;
+                // Reset UI after a short delay
+                setTimeout(() => {
+                    progressSection.style.display = 'none';
+                    generateBtn.style.display = 'inline-flex';
+                    generateBtn.disabled = false;
+                    cancelBtn.disabled = false;
+
+                    // Reset progress bar
+                    progressBar.style.width = '0%';
+                    progressStatus.textContent = 'Preparing...';
+                    progressPercentage.textContent = '0%';
+                    progressMessage.textContent = '';
+                }, 1000);
             }
         }
 
