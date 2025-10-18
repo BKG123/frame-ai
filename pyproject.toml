@@ -16,7 +16,8 @@ dependencies = [
     "types-requests>=2.32.4.20250913",
     "requests>=2.32.0",
     "python-multipart>=0.0.20",
-    "numpy>=2.3.4"
+    "numpy>=2.3.4",
+    "scipy>=1.16.2"
 ]
 
 [dependency-groups]
