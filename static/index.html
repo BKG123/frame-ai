@@ -629,20 +629,271 @@
 
         .progress-bar {
             width: 100%;
-            height: 6px;
+            height: 8px;
             background: #e2e8f0;
-            border-radius: 3px;
+            border-radius: 4px;
             overflow: hidden;
             margin-bottom: 1rem;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
         .progress-fill {
             height: 100%;
             background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-            border-radius: 3px;
+            border-radius: 4px;
             width: 0%;
-            transition: width 0.3s ease;
-            box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Visual Scorecards */
+        .scorecards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .scorecard {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: 1px solid #e2e8f0;
+        }
+
+        .scorecard:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.15);
+        }
+
+        .scorecard-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 1rem;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .scorecard-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .scorecard-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+
+        .scorecard-description {
+            font-size: 0.75rem;
+            color: #64748b;
+            line-height: 1.4;
+        }
+
+        .scorecard.excellent .scorecard-icon {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .scorecard.good .scorecard-icon {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+        }
+
+        .scorecard.average .scorecard-icon {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+        }
+
+        .scorecard.poor .scorecard-icon {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+
+        /* Enhanced Progress Steps */
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .progress-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            position: relative;
+        }
+
+        .progress-step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            right: -50%;
+            height: 2px;
+            background: #e2e8f0;
+            z-index: 1;
+        }
+
+        .progress-step.completed:not(:last-child)::after {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .progress-step-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            background: #e2e8f0;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 2;
+            transition: all 0.3s ease;
+        }
+
+        .progress-step.completed .progress-step-icon {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .progress-step.active .progress-step-icon {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .progress-step-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #64748b;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .progress-step.completed .progress-step-label {
+            color: #667eea;
+        }
+
+        .progress-step.active .progress-step-label {
+            color: #667eea;
+        }
+
+        /* Tooltips */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #1e293b;
+            color: white;
+            text-align: center;
+            border-radius: 8px;
+            padding: 8px 12px;
+            position: absolute;
+            z-index: 1000;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.875rem;
+            line-height: 1.4;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #1e293b transparent transparent transparent;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Enhanced Typography */
+        .analysis-section h3 {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+
+        .analysis-section p {
+            font-size: 1rem;
+            line-height: 1.7;
+            color: #475569;
+            margin-bottom: 1rem;
+        }
+
+        .analysis-section ul {
+            margin-bottom: 1.5rem;
+        }
+
+        .analysis-section li {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #475569;
+            margin-bottom: 0.75rem;
+            padding-left: 0.5rem;
+        }
+
+        .analysis-section strong {
+            font-weight: 700;
+            color: #1e293b;
         }
 
         .progress-message {
@@ -1624,19 +1875,25 @@
                         Photography Analysis
                     </div>
                     <div class="header-actions">
-                        <button class="action-btn" id="copy-analysis-btn" onclick="copyText()">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
-                                <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
-                            </svg>
-                            Copy Analysis
-                        </button>
-                        <button class="action-btn" id="generate-image-btn" onclick="showImageEditor()" style="display: none;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M12 3v18m9-9H3"/>
-                            </svg>
-                            Enhance Image
-                        </button>
+                        <div class="tooltip">
+                            <button class="action-btn" id="copy-analysis-btn" onclick="copyText()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+                                    <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+                                </svg>
+                                Copy Analysis
+                            </button>
+                            <span class="tooltiptext">Copy the analysis text to your clipboard</span>
+                        </div>
+                        <div class="tooltip">
+                            <button class="action-btn" id="generate-image-btn" onclick="showImageEditor()" style="display: none;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 3v18m9-9H3"/>
+                                </svg>
+                                Enhance Image
+                            </button>
+                            <span class="tooltiptext">Use AI to automatically improve your photo based on the analysis</span>
+                        </div>
                     </div>
                 </div>
 
@@ -1655,9 +1912,40 @@
                     <div class="tab-content active" id="quick-content">
                         <div class="loading" id="quick-loading">
                             <div class="progress-container">
+                                <!-- Enhanced Progress Steps -->
+                                <div class="progress-steps" id="progress-steps">
+                                    <div class="progress-step" id="step-upload">
+                                        <div class="progress-step-icon">📤</div>
+                                        <div class="progress-step-label">Upload</div>
+                                    </div>
+                                    <div class="progress-step" id="step-process">
+                                        <div class="progress-step-icon">🔄</div>
+                                        <div class="progress-step-label">Processing</div>
+                                    </div>
+                                    <div class="progress-step" id="step-composition">
+                                        <div class="progress-step-icon">🎯</div>
+                                        <div class="progress-step-label">Composition</div>
+                                    </div>
+                                    <div class="progress-step" id="step-lighting">
+                                        <div class="progress-step-icon">💡</div>
+                                        <div class="progress-step-label">Lighting</div>
+                                    </div>
+                                    <div class="progress-step" id="step-color">
+                                        <div class="progress-step-icon">🎨</div>
+                                        <div class="progress-step-label">Color</div>
+                                    </div>
+                                    <div class="progress-step" id="step-insights">
+                                        <div class="progress-step-icon">🧠</div>
+                                        <div class="progress-step-label">Insights</div>
+                                    </div>
+                                </div>
+
+                                <!-- Progress Bar -->
                                 <div class="progress-bar">
                                     <div class="progress-fill" id="progress-fill"></div>
                                 </div>
+
+                                <!-- Progress Message -->
                                 <div class="progress-message" id="progress-message">
                                     <div class="spinner"></div>
                                     <span id="progress-text">Initializing analysis...</span>
@@ -1910,6 +2198,9 @@
                 progressText.textContent = stage.message;
                 progressPercentage.textContent = stage.progress + '%';
 
+                // Update progress steps
+                updateProgressSteps(currentStageIndex);
+
                 currentStageIndex++;
 
                 if (currentStageIndex < progressStages.length) {
@@ -1918,6 +2209,23 @@
                     }, 3000);
                 }
             }
+        }
+
+        function updateProgressSteps(currentIndex) {
+            const stepIds = ['step-upload', 'step-process', 'step-composition', 'step-lighting', 'step-color', 'step-insights'];
+
+            stepIds.forEach((stepId, index) => {
+                const step = document.getElementById(stepId);
+                if (step) {
+                    step.classList.remove('active', 'completed');
+
+                    if (index < currentIndex) {
+                        step.classList.add('completed');
+                    } else if (index === currentIndex) {
+                        step.classList.add('active');
+                    }
+                }
+            });
         }
 
         async function analyzePhoto(file) {
@@ -2133,12 +2441,22 @@
 
         function renderConciseAnalysis(conciseData) {
             const points = conciseData.concise_bullet_points;
+
+            // Generate scorecards based on analysis
+            const scorecards = generateScorecards(conciseData);
+
             return `
                 <div class="concise-analysis">
                     <div class="concise-header">
                         <span>⚡</span>
                         Quick Analysis
                     </div>
+
+                    <!-- Visual Scorecards -->
+                    <div class="scorecards-container">
+                        ${scorecards}
+                    </div>
+
                     <div class="concise-content">
                         <div class="concise-impression">
                             ${conciseData.overall_impression}
@@ -2164,6 +2482,121 @@
                     </div>
                 </div>
             `;
+        }
+
+        function generateScorecards(analysisData) {
+            // Analyze the content to generate scores
+            const scores = analyzePhotoScores(analysisData);
+
+            return `
+                <div class="scorecard ${scores.exposure.rating}">
+                    <div class="scorecard-icon">💡</div>
+                    <div class="scorecard-title">Exposure</div>
+                    <div class="scorecard-value">${scores.exposure.score}</div>
+                    <div class="scorecard-description">${scores.exposure.description}</div>
+                </div>
+                <div class="scorecard ${scores.composition.rating}">
+                    <div class="scorecard-icon">🎯</div>
+                    <div class="scorecard-title">Composition</div>
+                    <div class="scorecard-value">${scores.composition.score}</div>
+                    <div class="scorecard-description">${scores.composition.description}</div>
+                </div>
+                <div class="scorecard ${scores.lighting.rating}">
+                    <div class="scorecard-icon">✨</div>
+                    <div class="scorecard-title">Lighting</div>
+                    <div class="scorecard-value">${scores.lighting.score}</div>
+                    <div class="scorecard-description">${scores.lighting.description}</div>
+                </div>
+                <div class="scorecard ${scores.overall.rating}">
+                    <div class="scorecard-icon">⭐</div>
+                    <div class="scorecard-title">Overall</div>
+                    <div class="scorecard-value">${scores.overall.score}</div>
+                    <div class="scorecard-description">${scores.overall.description}</div>
+                </div>
+            `;
+        }
+
+        function analyzePhotoScores(analysisData) {
+            const impression = analysisData.overall_impression.toLowerCase();
+            const points = analysisData.concise_bullet_points;
+
+            // Simple scoring logic based on keywords
+            let exposureScore = 7;
+            let compositionScore = 7;
+            let lightingScore = 7;
+
+            // Analyze impression and points for scoring
+            if (impression.includes('excellent') || impression.includes('perfect')) {
+                exposureScore = 9;
+                compositionScore = 9;
+                lightingScore = 9;
+            } else if (impression.includes('good') || impression.includes('well')) {
+                exposureScore = 8;
+                compositionScore = 8;
+                lightingScore = 8;
+            } else if (impression.includes('poor') || impression.includes('bad')) {
+                exposureScore = 4;
+                compositionScore = 4;
+                lightingScore = 4;
+            }
+
+            // Adjust based on specific feedback
+            if (points.technical) {
+                const tech = points.technical.toLowerCase();
+                if (tech.includes('excellent') || tech.includes('perfect')) {
+                    exposureScore = Math.min(10, exposureScore + 1);
+                } else if (tech.includes('poor') || tech.includes('bad')) {
+                    exposureScore = Math.max(1, exposureScore - 2);
+                }
+            }
+
+            if (points.artistic) {
+                const art = points.artistic.toLowerCase();
+                if (art.includes('strong') || art.includes('excellent')) {
+                    compositionScore = Math.min(10, compositionScore + 1);
+                } else if (art.includes('limited') || art.includes('weak')) {
+                    compositionScore = Math.max(1, compositionScore - 2);
+                }
+            }
+
+            const overallScore = Math.round((exposureScore + compositionScore + lightingScore) / 3);
+
+            return {
+                exposure: {
+                    score: exposureScore,
+                    rating: getRating(exposureScore),
+                    description: getScoreDescription(exposureScore, 'exposure')
+                },
+                composition: {
+                    score: compositionScore,
+                    rating: getRating(compositionScore),
+                    description: getScoreDescription(compositionScore, 'composition')
+                },
+                lighting: {
+                    score: lightingScore,
+                    rating: getRating(lightingScore),
+                    description: getScoreDescription(lightingScore, 'lighting')
+                },
+                overall: {
+                    score: overallScore,
+                    rating: getRating(overallScore),
+                    description: getScoreDescription(overallScore, 'overall')
+                }
+            };
+        }
+
+        function getRating(score) {
+            if (score >= 8) return 'excellent';
+            if (score >= 6) return 'good';
+            if (score >= 4) return 'average';
+            return 'poor';
+        }
+
+        function getScoreDescription(score, type) {
+            if (score >= 8) return `Excellent ${type}`;
+            if (score >= 6) return `Good ${type}`;
+            if (score >= 4) return `Average ${type}`;
+            return `Needs improvement`;
         }
 
         function enhanceAnalysisContent(htmlContent) {
