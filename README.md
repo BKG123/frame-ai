@@ -24,7 +24,8 @@
 
 ### ✅ Prerequisites
 
-* Python 3.11 or later
+* **Docker & Docker Compose** (recommended) OR
+* **Python 3.11 or later** (for local development)
 * An [Gemini API key](https://aistudio.google.com/welcome) for AI analysis
 
 ---
@@ -59,6 +60,33 @@
 ---
 
 ### ▶ Running the Application
+
+#### 🐳 Using Docker (Recommended)
+
+The easiest way to run Frame AI is using Docker:
+
+```bash
+# Build and start the container
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop the container
+docker-compose down
+```
+
+Or build manually:
+
+```bash
+# Build the image
+docker build -t frame-ai .
+
+# Run the container
+docker run -p 8000:8000 --env-file .env frame-ai
+```
+
+#### 💻 Using Python directly
 
 Start the server with hot reloading:
 

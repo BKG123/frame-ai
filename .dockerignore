@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+env/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Testing
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Git
+.git/
+.gitignore
+
+# Environment
+.env
+
+# Output and temporary files
+output/*
+files/*
+*.db
+analysis.db
+
+# Documentation
+README.md
+thoughts.txt
+
+# CI/CD
+.pre-commit-config.yaml
+.github/
+
+# Evaluation files
+evals/
+
+# macOS
+.DS_Store
+
+# Development
+*.log

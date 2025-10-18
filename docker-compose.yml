@@ -1,0 +1,30 @@
+services:
+  frame-ai:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: frame-ai
+    ports:
+      - "8000:8000"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    env_file:
+      - .env
+    volumes:
+      # Persist database
+      - ./analysis.db:/app/analysis.db
+      # Persist output files
+      - ./output:/app/output
+      # Persist uploaded files
+      - ./files:/app/files
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+volumes:
+  data:
+    driver: local
