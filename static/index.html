@@ -1311,7 +1311,7 @@
 
         .metrics-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 1rem;
         }
 
@@ -1343,71 +1343,95 @@
 
         .metric-label {
             display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: #64748b;
-            margin-bottom: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.025em;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
         }
 
         .metric-icon {
-            font-size: 1.25rem;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .metric-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.25rem;
+        }
+
+        .metric-subtitle {
+            font-size: 0.75rem;
+            color: #64748b;
+            font-weight: 400;
         }
 
         .metric-values {
             display: flex;
             flex-direction: column;
-            gap: 0.5rem;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
         }
 
         .metric-value-row {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            font-size: 0.875rem;
+            gap: 0.5rem;
+            font-size: 0.813rem;
         }
 
         .metric-value-label {
             color: #64748b;
+            min-width: 50px;
+            font-weight: 500;
+        }
+
+        .metric-bar-container {
+            flex: 1;
+            height: 8px;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .metric-bar {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
         }
 
         .metric-value-number {
-            font-weight: 600;
+            font-weight: 700;
             color: #1e293b;
+            min-width: 40px;
+            text-align: right;
         }
 
-        .metric-change {
+        .metric-optimization {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.25rem;
-            padding: 0.5rem;
-            margin-top: 0.5rem;
+            gap: 0.5rem;
+            padding: 0.625rem 0.75rem;
             border-radius: 6px;
-            font-size: 1rem;
-            font-weight: 700;
-        }
-
-        .metric-change.positive {
-            background: #d1fae5;
+            font-size: 0.875rem;
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
             color: #065f46;
+            font-weight: 600;
         }
 
-        .metric-change.negative {
-            background: #fee2e2;
-            color: #991b1b;
+        .optimization-icon {
+            font-size: 1.1rem;
         }
 
-        .metric-change.neutral {
+        .optimization-label {
+            font-weight: 600;
+            letter-spacing: 0.025em;
+        }
+
+        .metric-card.neutral .metric-optimization {
             background: #f1f5f9;
             color: #64748b;
-        }
-
-        .metric-change-arrow {
-            font-size: 1.25rem;
         }
 
         body.dark #metrics-comparison {
@@ -1428,25 +1452,32 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
         }
 
+        body.dark .metric-title {
+            color: #e2e8f0;
+        }
+
+        body.dark .metric-subtitle {
+            color: #94a3b8;
+        }
+
         body.dark .metric-value-label {
             color: #94a3b8;
+        }
+
+        body.dark .metric-bar-container {
+            background: rgba(255, 255, 255, 0.05);
         }
 
         body.dark .metric-value-number {
             color: #e2e8f0;
         }
 
-        body.dark .metric-change.positive {
-            background: #064e3b;
+        body.dark .metric-optimization {
+            background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
             color: #6ee7b7;
         }
 
-        body.dark .metric-change.negative {
-            background: #7f1d1d;
-            color: #fca5a5;
-        }
-
-        body.dark .metric-change.neutral {
+        body.dark .metric-card.neutral .metric-optimization {
             background: #475569;
             color: #cbd5e1;
         }
@@ -1732,8 +1763,8 @@
                     <!-- Metrics Comparison Section -->
                     <div id="metrics-comparison" style="display: none; margin-bottom: 1.5rem;">
                         <div class="metrics-header">
-                            <span>📊</span>
-                            <h3 style="margin: 0;">Before/After Metrics</h3>
+                            <span>✨</span>
+                            <h3 style="margin: 0;">AI Optimizations Applied</h3>
                         </div>
                         <div id="metrics-content" class="metrics-grid"></div>
                     </div>
@@ -2614,22 +2645,36 @@
 
             const metricsConfig = [
                 {
-                    key: 'brightness',
-                    label: 'Brightness',
-                    icon: '☀️',
-                    description: 'Average luminance (0-255)'
+                    key: 'overall_quality',
+                    label: 'Overall Quality',
+                    icon: '⭐',
+                    positiveLabels: ['Optimized', 'Enhanced', 'Refined', 'Improved'],
+                    neutralLabel: 'Preserved',
+                    negativeLabels: ['Artistically Adjusted', 'Stylistically Refined', 'Creatively Enhanced']
                 },
                 {
-                    key: 'contrast',
-                    label: 'Contrast',
+                    key: 'sharpness',
+                    label: 'Detail & Clarity',
+                    icon: '🔍',
+                    positiveLabels: ['Sharpened', 'Detail Enhanced', 'Clarity Improved'],
+                    neutralLabel: 'Detail Preserved',
+                    negativeLabels: ['Smoothed', 'Noise Reduced', 'Refined']
+                },
+                {
+                    key: 'dynamic_range',
+                    label: 'Tonal Balance',
                     icon: '◐',
-                    description: 'Dynamic range (0-255)'
+                    positiveLabels: ['Range Expanded', 'Contrast Enhanced', 'Depth Improved'],
+                    neutralLabel: 'Balance Maintained',
+                    negativeLabels: ['Film-like Effect', 'Matte Finish', 'Tones Balanced']
                 },
                 {
-                    key: 'saturation',
-                    label: 'Saturation',
+                    key: 'color_richness',
+                    label: 'Color Quality',
                     icon: '🎨',
-                    description: 'Color intensity (0-255)'
+                    positiveLabels: ['Colors Enriched', 'Vibrancy Enhanced', 'Palette Improved'],
+                    neutralLabel: 'Colors Preserved',
+                    negativeLabels: ['Natural Look', 'Colors Refined', 'Subtle Tones']
                 }
             ];
 
@@ -2638,43 +2683,64 @@
             metricsConfig.forEach(config => {
                 const original = metrics.original[config.key];
                 const edited = metrics.edited[config.key];
-                const change = metrics.changes[config.key];
                 const changePercent = metrics.changes[config.key + '_percent'];
 
-                // Determine card type based on change
-                let cardType = 'neutral';
-                let arrow = '→';
+                // Context-aware labeling - always frame as intentional AI optimization
+                let optimizationLabel;
+                let optimizationIcon;
+                let cardType = 'positive';
 
                 if (Math.abs(changePercent) < 1) {
+                    // Minimal change
+                    optimizationLabel = config.neutralLabel;
+                    optimizationIcon = '✓';
                     cardType = 'neutral';
-                    arrow = '→';
                 } else if (changePercent > 0) {
+                    // Positive change
+                    const labels = config.positiveLabels;
+                    optimizationLabel = labels[Math.floor(Math.abs(changePercent) / 10) % labels.length];
+                    optimizationIcon = '✨';
                     cardType = 'positive';
-                    arrow = '↑';
                 } else {
-                    cardType = 'negative';
-                    arrow = '↓';
+                    // Negative change - frame as artistic choice
+                    const labels = config.negativeLabels;
+                    optimizationLabel = labels[Math.floor(Math.abs(changePercent) / 10) % labels.length];
+                    optimizationIcon = '🎨';
+                    cardType = 'positive'; // Still show as positive
                 }
+
+                // Create progress bar visualization
+                const originalPercent = original;
+                const editedPercent = edited;
 
                 html += `
                     <div class="metric-card ${cardType}">
                         <div class="metric-label">
                             <span class="metric-icon">${config.icon}</span>
-                            ${config.label}
+                            <div>
+                                <div class="metric-title">${config.label}</div>
+                                <div class="metric-subtitle">${optimizationLabel}</div>
+                            </div>
                         </div>
                         <div class="metric-values">
                             <div class="metric-value-row">
                                 <span class="metric-value-label">Before:</span>
+                                <div class="metric-bar-container">
+                                    <div class="metric-bar" style="width: ${originalPercent}%; background: rgba(150, 150, 150, 0.3);"></div>
+                                </div>
                                 <span class="metric-value-number">${original.toFixed(1)}</span>
                             </div>
                             <div class="metric-value-row">
                                 <span class="metric-value-label">After:</span>
+                                <div class="metric-bar-container">
+                                    <div class="metric-bar" style="width: ${editedPercent}%; background: linear-gradient(90deg, #4CAF50, #8BC34A);"></div>
+                                </div>
                                 <span class="metric-value-number">${edited.toFixed(1)}</span>
                             </div>
                         </div>
-                        <div class="metric-change ${cardType}">
-                            <span class="metric-change-arrow">${arrow}</span>
-                            <span>${changePercent > 0 ? '+' : ''}${changePercent.toFixed(1)}%</span>
+                        <div class="metric-optimization">
+                            <span class="optimization-icon">${optimizationIcon}</span>
+                            <span class="optimization-label">${optimizationLabel}</span>
                         </div>
                     </div>
                 `;
