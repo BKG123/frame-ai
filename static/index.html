@@ -12,6 +12,12 @@
             box-sizing: border-box;
         }
 
+        /* Prevent horizontal scroll on mobile */
+        html, body {
+            overflow-x: hidden;
+            width: 100%;
+        }
+
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
@@ -1327,6 +1333,56 @@
             .metrics-grid {
                 grid-template-columns: 1fr;
             }
+
+            /* Fix grid minmax overflow */
+            #generated-variations-grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            /* Stack title and download button */
+            #selected-image-details > div:first-child {
+                flex-direction: column;
+                align-items: flex-start !important;
+                gap: 1rem;
+            }
+
+            #selected-image-details .image-actions {
+                width: 100%;
+            }
+
+            #selected-image-details .action-btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            /* Increase disclaimer text size */
+            #selected-image-details > div:nth-child(2) > div > div:last-child {
+                font-size: 0.9rem !important;
+            }
+
+            /* Better enhancement grid on mobile */
+            .enhancement-grid {
+                max-height: none !important;
+                padding: 1rem !important;
+            }
+
+            .enhancement-grid.collapsed {
+                padding: 0 1rem !important;
+            }
+
+            /* Larger comparison subtitle */
+            .comparison-subtitle {
+                font-size: 0.95rem;
+            }
+
+            /* Better touch targets */
+            .action-btn {
+                min-height: 44px;
+            }
+
+            .enhancement-item {
+                padding: 1.25rem;
+            }
         }
 
         /* Dark mode modal styles */
@@ -1426,6 +1482,10 @@
                 font-size: 1.75rem;
             }
 
+            .header p {
+                font-size: 1rem;
+            }
+
             .main {
                 padding: 1rem;
             }
@@ -1438,6 +1498,89 @@
 
             .header-actions {
                 width: 100%;
+            }
+
+            /* Smaller spacing on very small screens */
+            #selected-image-details {
+                padding: 1rem !important;
+                margin-top: 1.5rem !important;
+            }
+
+            /* Reduce disclaimer padding */
+            #selected-image-details > div:nth-child(2) {
+                padding: 0.75rem !important;
+            }
+
+            /* Smaller title */
+            #selected-image-details h3 {
+                font-size: 1.1rem !important;
+            }
+
+            /* More compact enhancement items */
+            .enhancement-item {
+                padding: 1rem;
+            }
+
+            .enhancement-grid {
+                padding: 0.75rem !important;
+            }
+
+            /* Reduce comparison title size */
+            .comparison-title {
+                font-size: 1.25rem;
+            }
+
+            /* Make images fully responsive */
+            .comparison-image, .preview-image {
+                max-height: 300px !important;
+            }
+        }
+
+        /* Landscape mobile optimization */
+        @media (max-width: 900px) and (max-height: 500px) {
+            .header {
+                padding: 1rem !important;
+            }
+
+            .header h1 {
+                font-size: 1.5rem !important;
+            }
+
+            .header p {
+                font-size: 0.9rem !important;
+            }
+
+            .comparison-image, .preview-image {
+                max-height: 200px !important;
+            }
+
+            .enhancement-grid {
+                max-height: 250px !important;
+                overflow-y: auto !important;
+            }
+        }
+
+        /* Improve tap target sizes */
+        @media (hover: none) and (pointer: coarse) {
+            /* Touch device specific styles */
+            button, .action-btn, .btn {
+                min-height: 44px;
+                min-width: 44px;
+            }
+
+            .enhancement-header-collapsible {
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+            }
+
+            /* Add more spacing between clickable elements */
+            .header-actions {
+                gap: 1rem;
+            }
+
+            .enhancement-item {
+                margin-bottom: 0.5rem;
             }
         }
     </style>
