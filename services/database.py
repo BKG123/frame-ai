@@ -1,7 +1,6 @@
 import sqlite3
 import json
 from typing import Optional, List, Dict, Any
-import hashlib
 
 
 class AnalysisDatabase:
@@ -35,26 +34,6 @@ class AnalysisDatabase:
                 CREATE INDEX IF NOT EXISTS idx_created_at ON analysis_results(created_at)
             """)
             conn.commit()
-
-    def get_file_hash(self, file_path: str) -> str:
-        """Generate a hash for the file content"""
-        hash_md5 = hashlib.md5()
-        with open(file_path, "rb") as f:
-            for chunk in iter(lambda: f.read(4096), b""):
-                hash_md5.update(chunk)
-        return hash_md5.hexdigest()
-
-    def get_filename_hash(self, file_path: str) -> str:
-        """Generate a hash for the file content"""
-        hash_md5 = hashlib.md5()
-        with open(file_path, "rb") as f:
-            for chunk in iter(lambda: f.read(4096), b""):
-                hash_md5.update(chunk)
-        return hash_md5.hexdigest()
-
-    def get_content_hash(self, content: bytes) -> str:
-        """Generate a hash for the file content from bytes"""
-        return hashlib.md5(content).hexdigest()
 
     def store_analysis(
         self,
