@@ -53,7 +53,7 @@ async def root():
 
 
 @router.post("/upload")
-@observe(name="upload_and_analyze", as_type="trace")
+@observe(name="upload_and_analyze")
 async def upload_and_analyze(request: Request, file: UploadFile = File(...)):
     """Upload a photo and get streaming analysis with caching"""
     if not file.content_type or not file.content_type.startswith("image/"):
@@ -235,7 +235,7 @@ async def upload_and_analyze(request: Request, file: UploadFile = File(...)):
 
 
 @router.post("/image/edit", response_model=ImageEditResponse)
-@observe(name="edit_image", as_type="trace")
+@observe(name="edit_image")
 async def edit_image(request: ImageEditRequest):
     """Edit an image using Gemini 2.5 Flash Image with original uploaded image and analysis context"""
     try:

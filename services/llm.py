@@ -163,15 +163,29 @@ async def gemini_llm_call(
             for url in image_urls:
                 messages.append({"role": "user", "content": f"[Attached {url}]"})
 
-        # Update Langfuse with input/output
+        # Extract usage metadata from response
+        usage_metadata = None
+        if hasattr(response, "usage_metadata") and response.usage_metadata:
+            usage_metadata = {
+                "input": response.usage_metadata.prompt_token_count,
+                "output": response.usage_metadata.candidates_token_count,
+                "total": response.usage_metadata.total_token_count,
+            }
+            logger.debug(f"Token usage: {usage_metadata}")
+
+        # Update Langfuse with input/output and usage
         if langfuse_config.is_configured:
             try:
                 langfuse_client = get_langfuse_client()
-                langfuse_client.update_current_observation(
-                    input={"messages": messages, "config": config.__dict__},
-                    output=response.text,
-                    model=model_name,
-                )
+                update_params = {
+                    "input": {"messages": messages, "config": config.__dict__},
+                    "output": response.text,
+                    "model": model_name,
+                }
+                if usage_metadata:
+                    update_params["usage"] = usage_metadata
+
+                langfuse_client.update_current_observation(**update_params)
             except Exception as e:
                 logger.debug(f"Failed to update Langfuse with I/O: {e}")
 
@@ -257,10 +271,26 @@ async def gemini_llm_call_stream(
 
         # Yield streaming content and collect for Langfuse
         full_output = []
+        final_chunk = None
         for chunk in response:
             if chunk.text:
                 full_output.append(chunk.text)
                 yield chunk.text
+            final_chunk = chunk  # Keep the last chunk for usage metadata
+
+        # Extract usage metadata from final chunk
+        usage_metadata = None
+        if (
+            final_chunk
+            and hasattr(final_chunk, "usage_metadata")
+            and final_chunk.usage_metadata
+        ):
+            usage_metadata = {
+                "input": final_chunk.usage_metadata.prompt_token_count,
+                "output": final_chunk.usage_metadata.candidates_token_count,
+                "total": final_chunk.usage_metadata.total_token_count,
+            }
+            logger.debug(f"Streaming token usage: {usage_metadata}")
 
         # Update Langfuse with complete output after streaming
         if langfuse_config.is_configured:
@@ -270,11 +300,15 @@ async def gemini_llm_call_stream(
                     messages.append({"role": "user", "content": user_prompt})
 
                 langfuse_client = get_langfuse_client()
-                langfuse_client.update_current_observation(
-                    input={"messages": messages},
-                    output="".join(full_output),
-                    model=model_name,
-                )
+                update_params = {
+                    "input": {"messages": messages},
+                    "output": "".join(full_output),
+                    "model": model_name,
+                }
+                if usage_metadata:
+                    update_params["usage"] = usage_metadata
+
+                langfuse_client.update_current_observation(**update_params)
             except Exception as e:
                 logger.debug(f"Failed to update Langfuse with streaming output: {e}")
 
@@ -393,19 +427,33 @@ def generate_image(
                 else:
                     logger.warning(f"Part {i} has neither text nor inline_data")
 
+        # Extract usage metadata from response
+        usage_metadata = None
+        if hasattr(response, "usage_metadata") and response.usage_metadata:
+            usage_metadata = {
+                "input": response.usage_metadata.prompt_token_count,
+                "output": response.usage_metadata.candidates_token_count,
+                "total": response.usage_metadata.total_token_count,
+            }
+            logger.debug(f"Image generation token usage: {usage_metadata}")
+
         # Update Langfuse with input/output
         if langfuse_config.is_configured:
             try:
                 langfuse_client = get_langfuse_client()
-                langfuse_client.update_current_observation(
-                    input={
+                update_params = {
+                    "input": {
                         "system_prompt": system_prompt,
                         "user_prompt": user_prompt,
                         "input_image_path": input_image_path,
                     },
-                    output=result,
-                    model="gemini-2.5-flash-image-preview",
-                )
+                    "output": result,
+                    "model": "gemini-2.5-flash-image-preview",
+                }
+                if usage_metadata:
+                    update_params["usage"] = usage_metadata
+
+                langfuse_client.update_current_observation(**update_params)
             except Exception as e:
                 logger.debug(f"Failed to update Langfuse with I/O: {e}")
 
