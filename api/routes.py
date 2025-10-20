@@ -8,7 +8,9 @@ import json
 import asyncio
 import uuid
 
+from langfuse import observe, get_client as get_langfuse_client
 from config.logger import get_logger
+from config.langfuse_config import langfuse_config
 from services.analysis import PhotoAnalyzer
 from services.database import db
 from services.llm import gemini_llm_call, generate_image
@@ -51,6 +53,7 @@ async def root():
 
 
 @router.post("/upload")
+@observe(name="upload_and_analyze", as_type="trace")
 async def upload_and_analyze(request: Request, file: UploadFile = File(...)):
     """Upload a photo and get streaming analysis with caching"""
     if not file.content_type or not file.content_type.startswith("image/"):
@@ -64,6 +67,23 @@ async def upload_and_analyze(request: Request, file: UploadFile = File(...)):
 
     # Get client IP for logging only (not used in cache key)
     client_ip = request.client.host if request.client else "unknown"
+
+    # Update Langfuse trace with metadata
+    if langfuse_config.is_configured:
+        try:
+            langfuse_client = get_langfuse_client()
+            langfuse_client.update_current_trace(
+                name="upload_and_analyze",
+                user_id=client_ip,
+                metadata={
+                    "file_hash": file_hash,
+                    "filename": file.filename,
+                    "content_type": file.content_type,
+                },
+                tags=["photo-analysis", "upload"],
+            )
+        except Exception as e:
+            logger.debug(f"Failed to update Langfuse trace: {e}")
 
     # Track upload
     cache_stats["uploads"] += 1
@@ -79,9 +99,25 @@ async def upload_and_analyze(request: Request, file: UploadFile = File(...)):
     if cached_analysis:
         cache_stats["hits"] += 1
         logger.info(f"Cache HIT for hash: {file_hash[:8]}...")
+        if langfuse_config.is_configured:
+            try:
+                langfuse_client = get_langfuse_client()
+                langfuse_client.update_current_trace(
+                    metadata={"cache_hit": True},
+                )
+            except Exception as e:
+                logger.debug(f"Failed to update Langfuse cache hit: {e}")
     else:
         cache_stats["misses"] += 1
         logger.info(f"Cache MISS for hash: {file_hash[:8]}...")
+        if langfuse_config.is_configured:
+            try:
+                langfuse_client = get_langfuse_client()
+                langfuse_client.update_current_trace(
+                    metadata={"cache_hit": False},
+                )
+            except Exception as e:
+                logger.debug(f"Failed to update Langfuse cache miss: {e}")
 
     # Create directory for uploaded images if it doesn't exist
     upload_dir = "static/uploaded_images"
@@ -199,9 +235,23 @@ async def upload_and_analyze(request: Request, file: UploadFile = File(...)):
 
 
 @router.post("/image/edit", response_model=ImageEditResponse)
+@observe(name="edit_image", as_type="trace")
 async def edit_image(request: ImageEditRequest):
     """Edit an image using Gemini 2.5 Flash Image with original uploaded image and analysis context"""
     try:
+        # Update Langfuse trace with metadata
+        if langfuse_config.is_configured:
+            try:
+                langfuse_client = get_langfuse_client()
+                langfuse_client.update_current_trace(
+                    name="edit_image",
+                    metadata={
+                        "file_hash": request.file_hash,
+                    },
+                    tags=["image-editing", "enhancement"],
+                )
+            except Exception as e:
+                logger.debug(f"Failed to update Langfuse trace for edit: {e}")
         # Get the cached analysis and original image path
         cached_analysis = None
         try:

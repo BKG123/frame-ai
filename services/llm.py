@@ -6,7 +6,9 @@ from typing import Any
 from google.genai import types
 import requests
 from dotenv import load_dotenv
+from langfuse import observe, get_client as get_langfuse_client
 from config.logger import get_logger
+from config.langfuse_config import langfuse_config
 from utils.helpers import get_file_mime_type
 
 
@@ -88,6 +90,7 @@ def _prepare_contents(
     return contents
 
 
+@observe(name="gemini_llm_call", as_type="generation")
 async def gemini_llm_call(
     system_prompt: str,
     user_prompt: str | None,
@@ -101,6 +104,22 @@ async def gemini_llm_call(
     **kwargs,
 ):
     try:
+        # Update Langfuse trace with metadata
+        if langfuse_config.is_configured:
+            try:
+                langfuse_client = get_langfuse_client()
+                langfuse_client.update_current_observation(
+                    name="gemini_llm_call",
+                    metadata={
+                        "model": model_name,
+                        "temperature": temperature,
+                        "json_format": json_format,
+                        "thinking_enabled": is_thinking_enabled,
+                        "has_images": bool(image_urls or image_file_path),
+                    },
+                )
+            except Exception as e:
+                logger.debug(f"Failed to update Langfuse context: {e}")
         client = genai.Client(
             api_key=os.getenv("GEMINI_API_KEY"),
         )
@@ -144,14 +163,37 @@ async def gemini_llm_call(
             for url in image_urls:
                 messages.append({"role": "user", "content": f"[Attached {url}]"})
 
+        # Update Langfuse with input/output
+        if langfuse_config.is_configured:
+            try:
+                langfuse_client = get_langfuse_client()
+                langfuse_client.update_current_observation(
+                    input={"messages": messages, "config": config.__dict__},
+                    output=response.text,
+                    model=model_name,
+                )
+            except Exception as e:
+                logger.debug(f"Failed to update Langfuse with I/O: {e}")
+
         print(messages)
         return response.text
 
     except Exception as e:
         logger.error(f"Error in Gemini LLM call: {e}")
+        # Log error to Langfuse
+        if langfuse_config.is_configured:
+            try:
+                langfuse_client = get_langfuse_client()
+                langfuse_client.update_current_observation(
+                    level="ERROR",
+                    status_message=str(e),
+                )
+            except Exception:
+                pass  # Silently fail if Langfuse update fails
         raise
 
 
+@observe(name="gemini_llm_call_stream", as_type="generation")
 async def gemini_llm_call_stream(
     system_prompt: str,
     user_prompt: str | None,
@@ -165,6 +207,24 @@ async def gemini_llm_call_stream(
 ):
     """Streaming version of gemini_llm_call"""
     try:
+        # Update Langfuse context with metadata
+        if langfuse_config.is_configured:
+            try:
+                langfuse_client = get_langfuse_client()
+                langfuse_client.update_current_observation(
+                    name="gemini_llm_call_stream",
+                    metadata={
+                        "model": model_name,
+                        "temperature": temperature,
+                        "json_format": json_format,
+                        "thinking_enabled": is_thinking_enabled,
+                        "has_images": bool(image_urls or image_file_path),
+                        "streaming": True,
+                    },
+                )
+            except Exception as e:
+                logger.debug(f"Failed to update Langfuse context: {e}")
+
         client = genai.Client(
             api_key=os.getenv("GEMINI_API_KEY"),
         )
@@ -195,16 +255,44 @@ async def gemini_llm_call_stream(
             config=config,
         )
 
-        # Yield streaming content
+        # Yield streaming content and collect for Langfuse
+        full_output = []
         for chunk in response:
             if chunk.text:
+                full_output.append(chunk.text)
                 yield chunk.text
+
+        # Update Langfuse with complete output after streaming
+        if langfuse_config.is_configured:
+            try:
+                messages = [{"role": "system", "content": system_prompt}]
+                if user_prompt:
+                    messages.append({"role": "user", "content": user_prompt})
+
+                langfuse_client = get_langfuse_client()
+                langfuse_client.update_current_observation(
+                    input={"messages": messages},
+                    output="".join(full_output),
+                    model=model_name,
+                )
+            except Exception as e:
+                logger.debug(f"Failed to update Langfuse with streaming output: {e}")
 
     except Exception as e:
         logger.error(f"Error in Gemini LLM streaming call: {e}")
+        if langfuse_config.is_configured:
+            try:
+                langfuse_client = get_langfuse_client()
+                langfuse_client.update_current_observation(
+                    level="ERROR",
+                    status_message=str(e),
+                )
+            except Exception:
+                pass  # Silently fail if Langfuse update fails
         yield f"Error: {str(e)}"
 
 
+@observe(name="generate_image", as_type="generation")
 def generate_image(
     system_prompt: str,
     user_prompt: str,
@@ -224,6 +312,21 @@ def generate_image(
         dict: Contains 'text' response and 'image_path' if successful
     """
     try:
+        # Update Langfuse context with metadata
+        if langfuse_config.is_configured:
+            try:
+                langfuse_client = get_langfuse_client()
+                langfuse_client.update_current_observation(
+                    name="generate_image",
+                    metadata={
+                        "model": "gemini-2.5-flash-image-preview",
+                        "has_input_image": bool(input_image_path),
+                        "output_path": output_file_path,
+                    },
+                )
+            except Exception as e:
+                logger.debug(f"Failed to update Langfuse context: {e}")
+
         client = genai.Client(
             api_key=os.environ.get("GEMINI_API_KEY"),
         )
@@ -290,8 +393,33 @@ def generate_image(
                 else:
                     logger.warning(f"Part {i} has neither text nor inline_data")
 
+        # Update Langfuse with input/output
+        if langfuse_config.is_configured:
+            try:
+                langfuse_client = get_langfuse_client()
+                langfuse_client.update_current_observation(
+                    input={
+                        "system_prompt": system_prompt,
+                        "user_prompt": user_prompt,
+                        "input_image_path": input_image_path,
+                    },
+                    output=result,
+                    model="gemini-2.5-flash-image-preview",
+                )
+            except Exception as e:
+                logger.debug(f"Failed to update Langfuse with I/O: {e}")
+
         return result
 
     except Exception as e:
         logger.error(f"Error in generate_image: {e}")
+        if langfuse_config.is_configured:
+            try:
+                langfuse_client = get_langfuse_client()
+                langfuse_client.update_current_observation(
+                    level="ERROR",
+                    status_message=str(e),
+                )
+            except Exception:
+                pass  # Silently fail if Langfuse update fails
         raise
