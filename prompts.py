@@ -22,6 +22,16 @@ Present your final critique using the following markdown format:
 
 **Overall Impression:** (A one-sentence summary of the image.)
 
+### Scores (1-10)
+
+Exposure:
+
+Composition:
+
+Lighting:
+
+Overall:
+
 ---
 
 **Strengths:**
@@ -84,13 +94,19 @@ ANALYSE_JSON_SYSTEM_PROMPT = """
 Convert the given photographic report into this JSON format
 
 {
-  "overall_impression": "A one-line summary of the image.",
-  "concise_bullet_points": {
-    "technical": "One or two key observations on exposure, focus, or noise.",
-    "artistic": "One or two key observations on composition, lighting, or mood.",
-    "best_practice": "How well it aligns with the suggested practices.",
-    "next_step": "A single actionable tip."
-  }
+    "overall_impression": "A one-line summary of the image.",
+    "concise_bullet_points": {
+        "technical": "One or two key observations on exposure, focus, or noise.",
+        "artistic": "One or two key observations on composition, lighting, or mood.",
+        "best_practice": "How well it aligns with the suggested practices.",
+        "next_step": "A single actionable tip."
+      }
+    "scores": {
+        "exposure":
+        "composition":
+        "lighting":
+        "overall":
+      }
 }
 """
 IMAGE_GEN_SYSTEM_PROMPT = """
