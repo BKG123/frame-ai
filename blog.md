@@ -4,6 +4,7 @@ title: "Frame AI: Building an AI-Powered Photography Assistant"
 date: 2025-10-20
 description: "How I built an AI system that analyzes and enhances photos while teaching me."
 author: "Bejay"
+tags: [Tech]
 acknowledgment: "Built with curiosity, debugged with patience, polished with <span style='color: #3182ce; font-weight: 500;'>Claude</span>."
 ---
 
@@ -14,7 +15,6 @@ Every developer will tell you this: "I want to work on a side project to improve
 **Why build Frame AI as a side project:**
 - Bridge the gap between taking photos and knowing how to improve them
 - Explore the AI + photography intersection
-- Build a real learning playground for system design
 
 <figure>
   <img src="/assets/images/2025-10-20-frame-ai/app-1.png" alt="Sample app image">
@@ -53,7 +53,7 @@ User uploads image → FastAPI backend → Image processing & caching layer → 
 
 **Key components:**
 
-- **Database**: SQLite (content-based hash indexing for deduplication)
+- **Database**: SQLite
 - **LLM Integration**: Gemini 2.5 Flash for analysis, Gemini 2.5 Flash Lite for JSON structuring, Gemini 2.5 Flash Image for enhancement
 - **Caching Strategy**: Content-based hashing prevents duplicate processing (performance + cost optimization)
 - **API Design**: RESTful endpoints with Server-Sent Events for streaming analysis
@@ -132,7 +132,6 @@ As mentioned earlier, the product has two main parts: image analysis and image e
 - **JSON structuring** (Gemini 2.5 Flash Lite): temperature = 0 (deterministic output)
 - **Prompt generation** (Gemini 2.5 Flash): temperature = 0.5 (creative but focused)
 
-**Performance**: Using `asyncio.gather()` for parallel generation reduces total wait time from ~45s to ~15s
 
 ### Decision 3: Separate LLM Call for Prompt Generation
 
@@ -183,7 +182,7 @@ As mentioned earlier, the product has two main parts: image analysis and image e
 - Problem: The generated image is completely new, not a modified version of the original
 - Metrics might show "improvement" but they're comparing apples to oranges
 
-**What I learned**: For AI-generated image enhancements, subjective visual comparison beats objective metrics. The user's eye is the best judge.
+
 
 <div class="image-grid">
   <figure>
@@ -209,61 +208,31 @@ As mentioned earlier, the product has two main parts: image analysis and image e
 
 ---
 
-## Technical Challenges & Solutions
+## Some Challenges & Solutions
 
-### Challenge 1: MIME Type Detection for Various Image Formats
+### Front end development
 
-**Problem**: Different browsers and clients send images with different MIME types. Some don't include proper Content-Type headers.
+**Problem**: I know very little FE dev
 
 **Solution**:
-- Implemented a helper function `get_file_mime_type()` that detects MIME type from:
-  1. File extension (`.jpg`, `.png`, `.heic`, etc.)
-  2. HTTP headers when fetching remote images
-  3. Fallback to `image/jpeg` for unknown types
-- Used Python's `mimetypes` library for reliable extension-to-MIME mapping
+- In this day and age you can't really bracket yourself into FE and BE. And also I couldn't really show my product via APIs!
+- Claude Code came to the rescue. It really spun up the FE based on my instructions.
+There were multiple iterations in a loop of claude doing something in FE -> Me not liking it -> putting ss in the inpout and asking it to rebuild. Also used Cursor's in built browser tool to let it gather info of current FE design and make some tweaks.
+- Attached the index.html file to Gemini and chatgpt and asked them to make it better but it was more or less the same thing.
+- I felt that the design was not that great so used lovable to make some changes Turns out, you can't load an existing repo there. So created a dummy repo and pushed my code base there, connected to lovable. It couldn't preview but it added some animations on button.
+- The current state of the FE is not great but it gets the job done
 
-### Challenge 2: Handling Large Images & EXIF Orientation
+### Orientation
 
 **Problem**:
-- Large images (>10MB) were slow to process
-- iPhone photos often had incorrect orientation due to EXIF rotation metadata
+- The edited image came out in incorrect orientation because probably, iPhone photos (with which I was testing) had incorrect EXIF rotation metadata
 
 **Solution**:
 - Used Pillow's `ImageOps.exif_transpose()` to auto-correct orientation before processing
-- Temporary files created with proper cleanup using context managers
-- Server-Sent Events for streaming analysis so users see progress immediately
+- Explicitly added in the prompt to maintain orientation
+- Both of these changes were suggested by Claude code and applied them at the same time -> seemed to fix the problem
 
-**Code snippet** ([utils/helpers.py:1-20](utils/helpers.py#L1-L20)):
-```python
-def get_file_mime_type(file_path: str) -> str:
-    """Detect MIME type from file extension or headers"""
-    mime_type, _ = mimetypes.guess_type(file_path)
-    if mime_type:
-        return mime_type
-    # Fallback for common extensions
-    if file_path.endswith('.heic'):
-        return 'image/heic'
-    return 'image/jpeg'
-```
-
-### Challenge 3: Balancing LLM Call Costs with Quality
-
-**Problem**: Each image analysis + enhancement requires 6+ LLM calls. Costs add up quickly.
-
-**Solution**:
-- Implemented aggressive caching with content-based hashing (40% hit rate)
-- Used cheaper models where possible (Gemini 2.5 Flash Lite for JSON structuring)
-- Set temperature = 0 for deterministic tasks to avoid retries
-- Future: Will implement batch processing and consolidate LLM calls
-
-**Cost breakdown** (per image):
-- Analysis: ~$0.01 (Gemini 2.5 Flash with vision)
-- Prompt generation: ~$0.002 (Gemini 2.5 Flash)
-- 3x Image generation: ~$0.12 ($0.039 per image)
-- 3x JSON structuring: ~$0.003 (Gemini 2.5 Flash Lite)
-- **Total: ~$0.135 per full analysis + enhancement**
-
-### Challenge 4: Making AI Feedback Actually Useful (Not Generic)
+### Making AI Feedback Actually Useful (Not Generic)
 
 **Problem**: Early versions gave generic feedback like "nice composition" or "good lighting" that didn't help users improve.
 
@@ -272,49 +241,27 @@ def get_file_mime_type(file_path: str) -> str:
 - Included EXIF data in the prompt so the LLM could explain technical settings
 - Asked for structured feedback: strengths, improvements, professional tips
 - Added numerical scores (1-10) for exposure, composition, lighting, overall
+- I arrived at this after multiple iterations.
 
 **Example of specific vs. generic feedback**:
 - ❌ Generic: "The lighting could be better"
 - ✅ Specific: "The main light source creates harsh shadows on the subject's face. Try shooting during the 'golden hour' or using a diffuser to soften the light."
 
----
+### Evals (planned)
+- This actually is an extension of the previous point.
+- Till now haven't written 'LLM Evals' as such. Have some test cases which checks whether the json structure expected and some heuristics on length.
+- Have plans to write proper evals for analysis - using LLM as a Judge method (have used this is work)
+- Have some ideas about image evals from [Storia-AI](https://github.com/Storia-AI/image-eval)
+- Will update this blog, after evals
 
-## What I Built vs. What I Learned
-
-**The product**: A working AI photography assistant that analyzes and enhances photos in real-time.
-
-**The real wins:**
-
-After 3 years working with LLMs, this project taught me lessons you can't learn from enterprise work alone:
-
-- **Image models are fundamentally different from text models**: Thought my LLM prompting experience would transfer directly. It didn't. Image generation models need surgical precision in instructions, not reasoning ability. Separation of concerns (reasoning LLM → instruction generation → image model) worked better than end-to-end prompting.
-
-- **Real-world system design beats architectural purity**: Content-based hashing wasn't the "cleanest" solution, but it solved real problems (cache collisions, PII concerns). Sometimes the pragmatic choice is the right choice.
-
-- **Caching is both UX and economics**: 40% cache hit rate doesn't just save money — it makes the product feel responsive. Users don't care about Server-Sent Events or streaming; they care that analysis feels instant on the second try.
-
-- **Iteration beats perfection**: Shipped with basic features, then improved based on real usage. The metrics tracking feature sounded great on paper, but added zero value in practice. Removing it improved focus.
-
-- **Users want agency, not magic**: Three variations >>> one "perfect" edit. For subjective tasks like photography, showing the AI's work (via text descriptions) builds more trust than hiding complexity.
-
-- **Async architecture compounds gains**: `asyncio.gather()` for parallel image generation wasn't just about speed (3x faster) — it fundamentally changed the user experience from "go grab coffee" to "wait a moment."
-
-### Personal Reflections
-
-Building Frame AI taught me something important: **side projects are learning artifacts**. After 3 years in the LLM industry, I thought I knew this space. But there's a difference between integrating LLMs into existing products and building something from scratch. The messy middle — debugging EXIF orientation at 2am, discovering my caching strategy had edge cases, iterating on prompts 20+ times — that's where real learning happens.
-
-Frame AI isn't perfect, and it probably never will be. But it's a snapshot of what I know *right now* about LLMs, system design, and product thinking. And that's valuable.
-
----
 
 ## What's Next
 
 **Potential improvements:**
-- **Batch processing**: Upload multiple photos, get bulk analysis
-- **Style preferences/learning**: Remember user preferences (prefers moody edits vs. bright and airy)
-- **Mobile app integration**: PWA or native iOS app for on-the-go analysis
-- **Community sharing features**: Gallery of before/after examples, upvoting best enhancements
+- **Evals**: Any LLM based app should have proper evals - no dependency on visual feedback
 - **Cost optimization**: Consolidate LLM calls, use open-source models for some tasks
+- **Batch processing**: Upload multiple photos, get bulk analysis
+- **Feedback over multiple uploads for a user**: Help users get better at photography over time
 
 **Open questions I'm still exploring:**
 - How to balance automation with creative control? (Let users tweak prompts? Provide sliders for "enhancement intensity"?)
@@ -325,13 +272,7 @@ Frame AI isn't perfect, and it probably never will be. But it's a snapshot of wh
 
 ## Conclusion: The Side Project Effect
 
-Started wanting to improve my photos. Ended up learning system design, LLM engineering, and product iteration.
-
-Frame AI isn't just a tool — it's a learning artifact. It represents 2 weeks of curiosity-driven exploration, late-night debugging, and iterative improvement. I learned more from building this than I would have from a dozen tutorials.
-
-If you're a developer thinking "I should build a side project," stop thinking and start building. Pick something you're genuinely curious about, not what's trending on Twitter. Your first version will be messy. Your caching strategy will have edge cases. Your prompts will need 20 iterations. That's fine. That's the point.
-
-The real value isn't the final product — it's the process of figuring things out.
+- Now that I have shipped my first "Side Project", I hope to be consistent and build new things at regular intervals and also improve this one
 
 **Try it, break it, let me know what you think**: [https://frame-ai.bejayketanguin.com/](https://frame-ai.bejayketanguin.com/){:target="_blank" rel="noopener noreferrer"}
 
