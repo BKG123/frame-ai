@@ -17,6 +17,7 @@
 * 🌙 **Dark/Light Mode** – Automatically adapts to your system preferences or manually toggle.
 * 📋 **Shareable Results** – Copy and share feedback with ease.
 * 🚀 **FastAPI Backend** – Built for speed with streaming support and auto-generated API docs.
+* 📊 **LLM Observability** – Optional Langfuse integration for tracking LLM calls, costs, and performance.
 
 ---
 
@@ -55,7 +56,12 @@
 
    ```bash
    cp .env.example .env
+   # Edit .env and add your GEMINI_API_KEY
    ```
+
+   **Optional: Enable Langfuse for LLM observability**
+
+   See [LANGFUSE_SETUP.md](LANGFUSE_SETUP.md) for detailed instructions on setting up LLM tracking.
 
 ---
 
@@ -147,18 +153,24 @@ uv run pre-commit install
 
 ```
 frame-ai/
-├── config/            # Configuration files and logging
+├── config/                  # Configuration files and logging
 │   ├── __init__.py
-│   └── logger.py
-├── services/          # Core logic
-│   ├── analysis.py    # Photo critique and streaming
-│   ├── llm.py         # AI integration
-│   └── tools.py       # Image processing utilities
+│   ├── logger.py
+│   └── langfuse_config.py  # Langfuse observability config
+├── services/                # Core logic
+│   ├── analysis.py          # Photo critique and streaming
+│   ├── llm.py               # AI integration (with Langfuse tracing)
+│   └── tools.py             # Image processing utilities
+├── api/                     # API routes and models
+│   ├── routes.py            # FastAPI route handlers (with Langfuse)
+│   └── models.py            # Pydantic schemas
 ├── static/
-│   └── index.html    # Responsive web UI
-├── main.py           # FastAPI app definition
-├── prompts.py        # AI prompt templates
-└── pyproject.toml    # Project dependencies with uv
+│   └── index.html          # Responsive web UI
+├── main.py                 # FastAPI app definition
+├── prompts.py              # AI prompt templates
+├── pyproject.toml          # Project dependencies with uv
+├── LANGFUSE_SETUP.md       # Langfuse integration guide
+└── LANGFUSE_INTEGRATION_SUMMARY.md  # Integration details
 ```
 
 ---
@@ -198,3 +210,4 @@ This project is open source. See the `LICENSE` file for details.
 * Built with [FastAPI](https://fastapi.tiangolo.com/)
 * AI analysis powered by [Gemini](https://gemini.google.com/app)
 * Image processing using [Pillow](https://python-pillow.org/)
+* LLM observability with [Langfuse](https://langfuse.com/)
