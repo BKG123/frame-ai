@@ -170,9 +170,8 @@ async def gemini_llm_call(
                 "input": response.usage_metadata.prompt_token_count,
                 "output": response.usage_metadata.candidates_token_count,
                 "total": response.usage_metadata.total_token_count,
-                "unit": "TOKENS",  # Required for Langfuse cost calculation
             }
-            logger.debug(f"Token usage: {usage_metadata}")
+            logger.info(f"Token usage: {usage_metadata}")
 
         # Update Langfuse with input/output and usage
         if langfuse_config.is_configured:
@@ -184,7 +183,7 @@ async def gemini_llm_call(
                     "model": model_name,
                 }
                 if usage_metadata:
-                    update_params["usage"] = usage_metadata
+                    update_params["usage_details"] = usage_metadata
 
                 langfuse_client.update_current_generation(**update_params)
             except Exception as e:
@@ -290,9 +289,8 @@ async def gemini_llm_call_stream(
                 "input": final_chunk.usage_metadata.prompt_token_count,
                 "output": final_chunk.usage_metadata.candidates_token_count,
                 "total": final_chunk.usage_metadata.total_token_count,
-                "unit": "TOKENS",  # Required for Langfuse cost calculation
             }
-            logger.debug(f"Streaming token usage: {usage_metadata}")
+            logger.info(f"Streaming token usage: {usage_metadata}")
 
         # Update Langfuse with complete output after streaming
         if langfuse_config.is_configured:
@@ -308,7 +306,7 @@ async def gemini_llm_call_stream(
                     "model": model_name,
                 }
                 if usage_metadata:
-                    update_params["usage"] = usage_metadata
+                    update_params["usage_details"] = usage_metadata
 
                 langfuse_client.update_current_generation(**update_params)
             except Exception as e:
@@ -436,9 +434,8 @@ def generate_image(
                 "input": response.usage_metadata.prompt_token_count,
                 "output": response.usage_metadata.candidates_token_count,
                 "total": response.usage_metadata.total_token_count,
-                "unit": "TOKENS",  # Required for Langfuse cost calculation
             }
-            logger.debug(f"Image generation token usage: {usage_metadata}")
+            logger.info(f"Image generation token usage: {usage_metadata}")
 
         # Update Langfuse with input/output
         if langfuse_config.is_configured:
@@ -454,7 +451,7 @@ def generate_image(
                     "model": "gemini-2.5-flash-image-preview",
                 }
                 if usage_metadata:
-                    update_params["usage"] = usage_metadata
+                    update_params["usage_details"] = usage_metadata
 
                 langfuse_client.update_current_generation(**update_params)
             except Exception as e:

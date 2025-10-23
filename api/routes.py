@@ -104,6 +104,7 @@ async def upload_and_analyze(request: Request, file: UploadFile = File(...)):
                 langfuse_client = get_langfuse_client()
                 langfuse_client.update_current_trace(
                     metadata={"cache_hit": True},
+                    tags=["photo-analysis", "upload", "cache-hit"],
                 )
             except Exception as e:
                 logger.debug(f"Failed to update Langfuse cache hit: {e}")
@@ -115,6 +116,7 @@ async def upload_and_analyze(request: Request, file: UploadFile = File(...)):
                 langfuse_client = get_langfuse_client()
                 langfuse_client.update_current_trace(
                     metadata={"cache_hit": False},
+                    tags=["photo-analysis", "upload", "cache-miss"],
                 )
             except Exception as e:
                 logger.debug(f"Failed to update Langfuse cache miss: {e}")
