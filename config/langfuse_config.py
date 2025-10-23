@@ -35,10 +35,13 @@ class LangfuseConfig:
 
         if self._client is None:
             try:
+                # Initialize with optimized settings for better performance
                 self._client = Langfuse(
                     public_key=self.public_key,
                     secret_key=self.secret_key,
                     host=self.host,
+                    debug=False,  # Suppress debug output
+                    flush_interval=1.0,  # Flush more frequently
                 )
                 logger.info(
                     f"Langfuse client initialized successfully (host: {self.host})"

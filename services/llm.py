@@ -104,11 +104,11 @@ async def gemini_llm_call(
     **kwargs,
 ):
     try:
-        # Update Langfuse trace with metadata
+        # Update Langfuse generation with metadata
         if langfuse_config.is_configured:
             try:
                 langfuse_client = get_langfuse_client()
-                langfuse_client.update_current_observation(
+                langfuse_client.update_current_generation(
                     name="gemini_llm_call",
                     metadata={
                         "model": model_name,
@@ -170,6 +170,7 @@ async def gemini_llm_call(
                 "input": response.usage_metadata.prompt_token_count,
                 "output": response.usage_metadata.candidates_token_count,
                 "total": response.usage_metadata.total_token_count,
+                "unit": "TOKENS",  # Required for Langfuse cost calculation
             }
             logger.debug(f"Token usage: {usage_metadata}")
 
@@ -185,7 +186,7 @@ async def gemini_llm_call(
                 if usage_metadata:
                     update_params["usage"] = usage_metadata
 
-                langfuse_client.update_current_observation(**update_params)
+                langfuse_client.update_current_generation(**update_params)
             except Exception as e:
                 logger.debug(f"Failed to update Langfuse with I/O: {e}")
 
@@ -198,7 +199,7 @@ async def gemini_llm_call(
         if langfuse_config.is_configured:
             try:
                 langfuse_client = get_langfuse_client()
-                langfuse_client.update_current_observation(
+                langfuse_client.update_current_generation(
                     level="ERROR",
                     status_message=str(e),
                 )
@@ -221,11 +222,11 @@ async def gemini_llm_call_stream(
 ):
     """Streaming version of gemini_llm_call"""
     try:
-        # Update Langfuse context with metadata
+        # Update Langfuse generation with metadata
         if langfuse_config.is_configured:
             try:
                 langfuse_client = get_langfuse_client()
-                langfuse_client.update_current_observation(
+                langfuse_client.update_current_generation(
                     name="gemini_llm_call_stream",
                     metadata={
                         "model": model_name,
@@ -289,6 +290,7 @@ async def gemini_llm_call_stream(
                 "input": final_chunk.usage_metadata.prompt_token_count,
                 "output": final_chunk.usage_metadata.candidates_token_count,
                 "total": final_chunk.usage_metadata.total_token_count,
+                "unit": "TOKENS",  # Required for Langfuse cost calculation
             }
             logger.debug(f"Streaming token usage: {usage_metadata}")
 
@@ -308,7 +310,7 @@ async def gemini_llm_call_stream(
                 if usage_metadata:
                     update_params["usage"] = usage_metadata
 
-                langfuse_client.update_current_observation(**update_params)
+                langfuse_client.update_current_generation(**update_params)
             except Exception as e:
                 logger.debug(f"Failed to update Langfuse with streaming output: {e}")
 
@@ -317,7 +319,7 @@ async def gemini_llm_call_stream(
         if langfuse_config.is_configured:
             try:
                 langfuse_client = get_langfuse_client()
-                langfuse_client.update_current_observation(
+                langfuse_client.update_current_generation(
                     level="ERROR",
                     status_message=str(e),
                 )
@@ -346,11 +348,11 @@ def generate_image(
         dict: Contains 'text' response and 'image_path' if successful
     """
     try:
-        # Update Langfuse context with metadata
+        # Update Langfuse generation with metadata
         if langfuse_config.is_configured:
             try:
                 langfuse_client = get_langfuse_client()
-                langfuse_client.update_current_observation(
+                langfuse_client.update_current_generation(
                     name="generate_image",
                     metadata={
                         "model": "gemini-2.5-flash-image-preview",
@@ -434,6 +436,7 @@ def generate_image(
                 "input": response.usage_metadata.prompt_token_count,
                 "output": response.usage_metadata.candidates_token_count,
                 "total": response.usage_metadata.total_token_count,
+                "unit": "TOKENS",  # Required for Langfuse cost calculation
             }
             logger.debug(f"Image generation token usage: {usage_metadata}")
 
@@ -453,7 +456,7 @@ def generate_image(
                 if usage_metadata:
                     update_params["usage"] = usage_metadata
 
-                langfuse_client.update_current_observation(**update_params)
+                langfuse_client.update_current_generation(**update_params)
             except Exception as e:
                 logger.debug(f"Failed to update Langfuse with I/O: {e}")
 
@@ -464,7 +467,7 @@ def generate_image(
         if langfuse_config.is_configured:
             try:
                 langfuse_client = get_langfuse_client()
-                langfuse_client.update_current_observation(
+                langfuse_client.update_current_generation(
                     level="ERROR",
                     status_message=str(e),
                 )

@@ -1,8 +1,9 @@
 """Main entry point for Frame AI application."""
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
+import logging
 
 from api.routes import router
 from config.langfuse_config import langfuse_config
@@ -10,42 +11,36 @@ from config.logger import get_logger
 
 logger = get_logger(__name__)
 
+# Suppress noisy OpenTelemetry error logs (these are background export errors that don't affect functionality)
+logging.getLogger("opentelemetry.sdk._shared_internal").setLevel(logging.CRITICAL)
+logging.getLogger("opentelemetry.exporter.otlp").setLevel(logging.CRITICAL)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Lifecycle manager for FastAPI application."""
-    # Startup: Initialize Langfuse instrumentation
+    # Startup: Initialize Langfuse client
     if langfuse_config.is_configured:
         try:
-            from openinference.instrumentation.google_genai import (
-                GoogleGenAIInstrumentor,
-            )
-            from langfuse.opentelemetry import LangfuseSpanProcessor
-            from opentelemetry import trace
-            from opentelemetry.sdk.trace import TracerProvider
-
-            # Set up OpenTelemetry tracer provider
-            tracer_provider = TracerProvider()
-            trace.set_tracer_provider(tracer_provider)
-
-            # Add Langfuse span processor
             langfuse_client = langfuse_config.get_client()
             if langfuse_client:
-                span_processor = LangfuseSpanProcessor()
-                tracer_provider.add_span_processor(span_processor)
-
-                # Instrument Google GenAI
-                GoogleGenAIInstrumentor().instrument()
-                logger.info("Langfuse instrumentation initialized successfully")
+                logger.info(
+                    "Langfuse observability enabled (using @observe decorators)"
+                )
+            else:
+                logger.warning("Langfuse is enabled but client initialization failed")
         except Exception as e:
-            logger.warning(f"Failed to initialize Langfuse instrumentation: {e}")
+            logger.warning(f"Failed to initialize Langfuse: {e}")
 
     yield
 
     # Shutdown: Flush pending traces
     if langfuse_config.is_configured:
-        langfuse_config.flush()
-        logger.info("Langfuse traces flushed on shutdown")
+        try:
+            langfuse_config.flush()
+            logger.info("Langfuse traces flushed on shutdown")
+        except Exception as e:
+            logger.warning(f"Failed to flush Langfuse traces on shutdown: {e}")
 
 
 app = FastAPI(
@@ -54,6 +49,26 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
+
+
+# Middleware to flush Langfuse traces after each request
+@app.middleware("http")
+async def langfuse_flush_middleware(request: Request, call_next):
+    """Flush Langfuse traces after each request to ensure data is sent."""
+    response = await call_next(request)
+
+    # Flush traces after request completes
+    if langfuse_config.is_configured:
+        try:
+            from langfuse import get_client
+
+            langfuse_client = get_client()
+            langfuse_client.flush()
+        except Exception as e:
+            logger.debug(f"Failed to flush Langfuse in middleware: {e}")
+
+    return response
+
 
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
